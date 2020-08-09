@@ -1,5 +1,6 @@
 from web import db
 import hashlib
+from config import PASSWORD_SALT
 
 STATUS_ADMIN = 'a'
 STATUS_STUDENT = 's'
@@ -17,12 +18,12 @@ class User(db.Model):
         self.login = login
 
     def save(self, password):
-        self.password = hashlib.sha512(password.encode('utf-8')).hexdigest()
+        self.password = hashlib.sha512((password+PASSWORD_SALT).encode('utf-8')).hexdigest()
         db.session.add(self)
         db.session.commit()
 
     def check_user(self, password):
-        hash = hashlib.sha512(password.encode('utf-8')).hexdigest()
+        hash = hashlib.sha512((password+PASSWORD_SALT).encode('utf-8')).hexdigest()
         return hash == self.password
 
     @staticmethod
