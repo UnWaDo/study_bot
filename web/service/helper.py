@@ -19,7 +19,10 @@ def new_message(data):
     user = get_user(user_id)
     if user is None:
         return 'ok'
+
     name = user['first_name']
+    text = "hello, {}!".format(name)
+    
     mess_id = send_message(text, user_id)
     if mess_id is not None:
         print('user_id: {}, text: {}, message_id: {}'.format(user_id, text, mess_id))
