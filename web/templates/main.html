@@ -3,5 +3,8 @@
 {% block body %}
 <div align="center" style="margin-top: 100px;">
     <h3> Окно модерации для бота </h3>
+    {% for user in users %}
+        <div>ID: {{user.vk_id}}, уровень доступа: {{user.status}}</div>
+    {% endfor %}
 </div>
 {% endblock %}
