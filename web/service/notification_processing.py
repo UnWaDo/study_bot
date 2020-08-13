@@ -3,7 +3,7 @@ import logging, requests
 from datetime import datetime
 from random import randint
 import web.service.vk_api_connector as VK
-from web.models import User, VKUser
+from web.models import User, VKUser, IncomingMessage, OutgoingMessage
 
 
 def verification(data):
@@ -15,23 +15,29 @@ def verification(data):
 
 def new_user_greeting(user_id):
     user = VK.get_user(user_id)
-    if user is None:
-        return 'ok'
     name = user['first_name']
-    text = "hello, {}!".format(name)
+    text = 'Добро пожаловать, {}! Для вывода справки напишите "Справка"'.format(name)
 
-    mess_id = VK.send_message(text, user_id)
-    if mess_id is not None:
-        print('user_id: {}, text: {}, message_id: {}'.format(user_id, text, mess_id))
+    message = OutgoingMessage(
+        to_id=user_id,
+        text=text
+    )
+    result = message.send()
+    if not result:
+        logging.error('Failed to send message to user %s.', user_id)
 
 
 def new_message(data):
-    user_id = data['object']['message']['from_id']
-
-    db_user = VKUser.get(vk_id=user_id)
-    if db_user is None:
-        db_user = VKUser(user_id)
-        db_user.save()
+    message = IncomingMessage(
+        from_id = data['object']['message']['from_id'],
+        random_id = data['object']['message']['random_id'],
+        text = data['object']['message']['text']
+    )
+    message.save()
+    vk_user = VKUser.get(vk_id=message.from_id)
+    if vk_user is None:
+        vk_user = VKUser(user_id)
+        vk_user.save()
         logging.info('New user with ID %s was added.', user_id)
         new_user_greeting(user_id)
 

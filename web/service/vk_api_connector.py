@@ -22,11 +22,10 @@ def send_message(text, user_id):
     )).json()
 
     if result.get('error') is not None:
-        print(result)
         logging.error('Failed to send message to user: {}'.format(result))
         return None
     else:
-        return result.get('response')
+        return seed
 
 def get_user(user_id):
     inner_template = TEMPLATE.format(

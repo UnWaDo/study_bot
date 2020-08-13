@@ -1,6 +1,7 @@
 from web import db
 import hashlib
 from config import PASSWORD_SALT
+import web.service.vk_api_connector as VK
 
 STATUS_ADMIN = 'a'
 STATUS_STUDENT = 's'
@@ -48,6 +49,10 @@ class User(db.Model):
         return None
 
     @staticmethod
+    def get_by_status(status):
+        return User.query.filter_by(status=status).all()
+
+    @staticmethod
     def get_all():
         return User.query.all()
 
@@ -84,8 +89,8 @@ class IncomingMessage(db.Model):
     random_id = db.Column(db.Integer, nullable=False)
     text = db.Column(db.String(4096), nullable=False)
 
-    def __init__(self, to_id, random_id, text):
-        self.from_id = to_id
+    def __init__(self, from_id, random_id, text):
+        self.from_id = from_id
         self.random_id = random_id
         self.text = text
 
@@ -100,11 +105,15 @@ class OutgoingMessage(db.Model):
     random_id = db.Column(db.Integer, nullable=False)
     text = db.Column(db.String(4096), nullable=False)
 
-    def __init__(self, to_id, random_id, text):
+    def __init__(self, to_id, text):
         self.to_id = to_id
-        self.random_id = random_id
         self.text = text
 
-    def save(self):
+    def send(self):
+        random_id = VK.send_message(text=self.text, user_id=self.to_id)
+        if random_id is None:
+            return False
+        self.random_id = random_id
         db.session.add(self)
         db.session.commit()
+        return True
