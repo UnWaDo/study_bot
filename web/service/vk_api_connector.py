@@ -18,8 +18,8 @@ def send_message(text, user_id):
     result = requests.get(inner_template.format(
         seed = seed,
         u_id = user_id,
-        text = text)
-    ).json()
+        text = text
+    )).json()
 
     if result.get('error') is not None:
         print(result)
@@ -31,14 +31,14 @@ def send_message(text, user_id):
 def get_user(user_id):
     inner_template = TEMPLATE.format(
         method = 'users.get',
-        params = ('user_id={u_id}&' +
+        params = ('user_ids={u_id}&' +
         '&access_token=' + ACCESS_TOKEN +
         '&v=' + API_VERSION)
     )
 
     result = requests.get(inner_template.format(
-        u_id = user_id)
-    ).json()
+        u_id = user_id
+    )).json()
 
     if result.get('error') is not None:
         logging.error('Failed to get user: {}'.format(result))

@@ -3,12 +3,18 @@ from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Length, ValidationError, StopValidation
 import web.service.vk_api_connector as VK
 from web.models import User
+from web.service.helper import get_numeric_id
 
 
 def validate_vk_id(form, field):
     user = VK.get_user(field.data)
     if user is None:
         raise ValidationError('Ошибка получения информации о пользователе с таким ID.')
+
+def validate_vk_id_is_uniq(form, field):
+    vk_id = get_numeric_id(field.data)
+    if User.get(vk_id=vk_id) is not None:
+        raise ValidationError('Пользователь с таким ID уже зарегистрирован.')
 
 def validate_login_is_uniq(form, field):
     user = User.get(login=field.data)
@@ -26,7 +32,6 @@ def check_auth_password(form, field):
         raise ValidationError('Неправильный пароль')
 
 
-
 class RegistrationForm(FlaskForm):
     login = StringField('login', validators=[
         DataRequired(message='Поле "Логин" должно быть заполнено.'),
@@ -39,9 +44,9 @@ class RegistrationForm(FlaskForm):
     ])
     vk_id = StringField('vk_id', validators=[
         DataRequired(message='Поле "Идентификатор ВК" должно быть заполнено.'),
-        validate_vk_id])
+        validate_vk_id, validate_vk_id_is_uniq])
 
 
 class AuthForm(FlaskForm):
-    login = StringField('login', validators=[DataRequired()])
-    password = PasswordField('password', validators=[DataRequired()])
+    login = StringField('login', validators=[DataRequired(), check_auth_login])
+    password = PasswordField('password', validators=[DataRequired(), check_auth_password])

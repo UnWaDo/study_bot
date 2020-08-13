@@ -31,6 +31,7 @@ def registration():
             password=reg_form.password.data,
             vk_id=reg_form.vk_id.data
         )
+        return redirect(url_for('main'))
     return render_template('registration.html', title='Регистрация',
             form=reg_form)
 
