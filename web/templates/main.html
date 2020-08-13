@@ -1,10 +1,17 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<div align="center" style="margin-top: 100px;">
-    <h3> Окно модерации для бота </h3>
-    {% for user in users %}
-        <div>ID: {{user.vk_id}}, уровень доступа: {{user.status}}</div>
-    {% endfor %}
+<h3 align="center">Сайт для управления ботом</h3>
+<div align="center">
+    {% if user is none %}
+        <p>Чтобы получить доступ к модерации
+            <a href="{{url_for('auth')}}">войдите</a> или
+            <a href="{{url_for('registration')}}">зарегистрируйтесь</a>
+        </p>
+    {% elif not access %}
+        <p>У вас недостаточно прав для доступа. <a href="{{url_for('logout')}}">Выйти</a>.</p>
+    {% else %}
+        <p>Вы можете перейти к <a href="{{url_for('moderate')}}">модерации</a>.</p>
+    {% endif %}
 </div>
 {% endblock %}

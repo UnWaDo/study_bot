@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div align="center" style="margin-top: 100px;">
+    <h3> Окно модерации для бота </h3>
+    <h4> Пользователи сайта </h4>
+    {% for user in users %}
+        <div>{{user.login}}, уровень доступа: {{user.status}}, vk: <a href="http://vk.com/id{{user.vk_id}}">id{{user.vk_id}}</a></div>
+    {% endfor %}
+    <h4> Подключённые ВК аккаунты </h4>
+    {% for user in vk_users %}
+        <div>ID: <a href="http://vk.com/id{{user.vk_id}}">{{user.vk_id}}</a>, уровень доступа: {{user.status}}</div>
+    {% endfor %}
+</div>
+{% endblock %}

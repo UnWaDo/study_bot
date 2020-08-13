@@ -12,14 +12,12 @@ def send_message(text, user_id):
     seed = randint(MIN_SEED, MAX_SEED)
     inner_template = TEMPLATE.format(
         method = 'messages.send',
-        params = 'random_id={seed}&user_id={u_id}&access_token={token}&v={v}&message={text}'
+        params = 'random_id={seed}&user_id={u_id}&message={text}'
     )
 
     result = requests.get(inner_template.format(
         seed = seed,
         u_id = user_id,
-        token = ACCESS_TOKEN,
-        v = API_VERSION,
         text = text)
     ).json()
 
@@ -33,13 +31,13 @@ def send_message(text, user_id):
 def get_user(user_id):
     inner_template = TEMPLATE.format(
         method = 'users.get',
-        params = 'user_id={u_id}&access_token={token}&v={v}'
+        params = ('user_id={u_id}&' +
+        '&access_token=' + ACCESS_TOKEN +
+        '&v=' + API_VERSION)
     )
 
     result = requests.get(inner_template.format(
-        u_id = user_id,
-        token = ACCESS_TOKEN,
-        v = API_VERSION)
+        u_id = user_id)
     ).json()
 
     if result.get('error') is not None:
