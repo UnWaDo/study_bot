@@ -1,5 +1,6 @@
 import web.service.vk_api_connector as VK
 from web.models import STATUS_ADMIN, STATUS_UNKNOWN, STATUS_MODERATOR, STATUS, OutgoingMessage
+from web.models import User, VKUser
 
 
 def new_user_greeting(user_id):

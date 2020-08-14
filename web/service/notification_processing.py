@@ -26,10 +26,10 @@ def new_message(data):
     l_text = message.text.lower()
     vk_user = VKUser.get(vk_id=message.from_id)
     if vk_user is None:
-        vk_user = VKUser(user_id)
+        vk_user = VKUser(message.from_id)
         vk_user.save()
         logging.info('New user with ID %s was added.', user_id)
-        new_user_greeting(user_id)
+        new_user_greeting(message.from_id)
         return 'ok'
     command = re.search(r'задать уровень доступа (\w+) как (\w+)', l_text)
     if command is None:
