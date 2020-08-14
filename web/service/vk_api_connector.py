@@ -1,0 +1,46 @@
+from random import randint
+from config import ACCESS_TOKEN, API_VERSION, ERROR_MESSAGE
+import logging, requests
+
+MIN_SEED = -2147483648
+MAX_SEED = 2147483647
+TEMPLATE = ('https://api.vk.com/method/{method}?{params}' +
+            '&access_token=' + ACCESS_TOKEN +
+            '&v=' + API_VERSION)
+
+def send_message(text, user_id):
+    seed = randint(MIN_SEED, MAX_SEED)
+    inner_template = TEMPLATE.format(
+        method = 'messages.send',
+        params = 'random_id={seed}&user_id={u_id}&message={text}'
+    )
+
+    result = requests.get(inner_template.format(
+        seed = seed,
+        u_id = user_id,
+        text = text
+    )).json()
+
+    if result.get('error') is not None:
+        logging.error('Failed to send message to user: {}'.format(result))
+        return None
+    else:
+        return seed
+
+def get_user(user_id):
+    inner_template = TEMPLATE.format(
+        method = 'users.get',
+        params = ('user_ids={u_id}&' +
+        '&access_token=' + ACCESS_TOKEN +
+        '&v=' + API_VERSION)
+    )
+
+    result = requests.get(inner_template.format(
+        u_id = user_id
+    )).json()
+
+    if result.get('error') is not None:
+        logging.error('Failed to get user: {}'.format(result))
+        return None
+    else:
+        return result['response'][0]

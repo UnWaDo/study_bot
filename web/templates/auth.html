@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h3 align="center">Вход</h3>
+<div align="center">
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {% if form.login.errors %}
+        {% for error in form.login.errors %}
+            <p style="color: red;">{{error}}</p>
+        {% endfor %}
+        {% endif %}
+        <label for='login'>Логин</label>
+        <div style="margin: 0 auto;">
+            {{form.login(size=30)}}
+        </div>
+        <br>
+        <br>
+        {% if form.password.errors %}
+        {% for error in form.password.errors %}
+            <p style="color: red;">{{error}}</p>
+        {% endfor %}
+        {% endif %}
+        <label for='password'>Пароль</label>
+        <div style="margin: 0 auto;">
+            {{form.password(size=30)}}
+        </div>
+        <br>
+        <br>
+        <div style="margin: 0 auto;">
+            <input type="submit" value="Зарегистрироваться">
+        </div>
+    </form>
+</div>
+{% endblock %}
