@@ -1,6 +1,6 @@
 from wtforms import StringField, PasswordField, SubmitField, SelectField
 from flask_wtf import FlaskForm
-from wtforms.validators import DataRequired, Length, ValidationError, StopValidation
+from wtforms.validators import DataRequired, Length, ValidationError, StopValidation, Regexp
 import web.service.vk_api_connector as VK
 from web.models import User
 from web.service.helper import get_numeric_id
@@ -36,6 +36,7 @@ class RegistrationForm(FlaskForm):
     login = StringField('login', validators=[
         DataRequired(message='Поле "Логин" должно быть заполнено.'),
         Length(min=4, max=32, message='Длина логина должна составлять от 4 до 32 символов.'),
+        Regexp(r'\w+$', message='Логин должен содержать только буквы, цифры и нижние подчёркивания.'),
         validate_login_is_uniq
     ])
     password = PasswordField('pass', validators=[

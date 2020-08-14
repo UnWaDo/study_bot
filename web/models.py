@@ -8,6 +8,11 @@ STATUS_STUDENT = 's'
 STATUS_DECANATE = 'd'
 STATUS_MODERATOR = 'm'
 STATUS_UNKNOWN = 'u'
+STATUS = {
+    STATUS_ADMIN: 'Администратор',
+    STATUS_UNKNOWN: 'Нет доступа',
+    STATUS_MODERATOR: 'Модератор'
+}
 ACCESS_GROUP = [STATUS_ADMIN, STATUS_MODERATOR]
 
 
@@ -20,9 +25,9 @@ class User(db.Model):
     status = db.Column(db.String(1), nullable=False)
 
     def __init__(self, login, vk_id, status=STATUS_UNKNOWN):
-        self.login = login
+        self.login = login.lower()
         self.vk_id = vk_id
-        self.status = status
+        self.status = status.lower()
 
     def save(self, password):
         self.password = hashlib.sha512((password+PASSWORD_SALT).encode('utf-8')).hexdigest()
@@ -34,14 +39,14 @@ class User(db.Model):
         return hash == self.password
 
     def set_status(self, status):
-        self.status = status
+        self.status = status.lower()
         db.session.add(self)
         db.session.commit()
 
     @staticmethod
     def get(id=None, vk_id=None, login=None):
         if login is not None:
-            return User.query.filter_by(login=login).first()
+            return User.query.filter_by(login=login.lower()).first()
         if id is not None:
             return User.query.filter_by(id=id).first()
         if vk_id is not None:
@@ -50,7 +55,7 @@ class User(db.Model):
 
     @staticmethod
     def get_by_status(status):
-        return User.query.filter_by(status=status).all()
+        return User.query.filter_by(status=status.lower()).all()
 
     @staticmethod
     def get_all():
@@ -64,7 +69,7 @@ class VKUser(db.Model):
 
     def __init__(self, vk_id, status=STATUS_UNKNOWN):
         self.vk_id = vk_id
-        self.status = status
+        self.status = status.lower()
 
     def save(self):
         db.session.add(self)

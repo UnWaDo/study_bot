@@ -4,6 +4,9 @@ from datetime import datetime
 from random import randint
 import web.service.vk_api_connector as VK
 from web.models import User, VKUser, IncomingMessage, OutgoingMessage
+from web.models import STATUS_ADMIN, STATUS_MODERATOR, STATUS_UNKNOWN, STATUS
+from web.service.messager import new_user_greeting, notify_on_status_change, approval_message, error_message
+import re
 
 
 def verification(data):
@@ -12,20 +15,6 @@ def verification(data):
         return VERIFICATION_RESPONSE
     logging.error('Confirmation failed. Expected %s, found %s', GROUP_ID, data.get('group_id'))
     return 'confirmation failed'
-
-def new_user_greeting(user_id):
-    user = VK.get_user(user_id)
-    name = user['first_name']
-    text = 'Добро пожаловать, {}! Для вывода справки напишите "Справка"'.format(name)
-
-    message = OutgoingMessage(
-        to_id=user_id,
-        text=text
-    )
-    result = message.send()
-    if not result:
-        logging.error('Failed to send message to user %s.', user_id)
-
 
 def new_message(data):
     message = IncomingMessage(
@@ -40,6 +29,35 @@ def new_message(data):
         vk_user.save()
         logging.info('New user with ID %s was added.', user_id)
         new_user_greeting(user_id)
+        return 'ok'
+    command = re.search(r'задать уровень доступа (\w+) как (\w+)', message.text.lower())
+    if command is not None:
+        user = User.get(vk_id=message.from_id)
+        if user.status != STATUS_ADMIN:
+            error_message(user.vk_id, 'Недостаточный уровень доступа для выполнения команды.')
+            return 'ok'
+        login = command.group(1)
+        changing_user = User.get(login=login)
+        if changing_user is None:
+            error_message(user.vk_id, 'Пользователя {} не существует.'.format(login))
+            return 'ok'
+
+        result = change_status(
+            login=command.group(1),
+            status=command.group(2)
+        )
+        if not result:
+            error_message(user.vk_id, 'Некорректное указание кода уровня доступа.')
+            return 'ok'
+
+        approval_message(
+            user.vk_id,
+            'Пользователь {login} теперь имеет уровень доступа {status}'.format(
+                login=changing_user.login,
+                status=STATUS[changing_user.status]
+            )
+        )
+        return 'ok'
 
     return 'ok'
 
@@ -53,3 +71,16 @@ def request_processing(data):
         return new_message(data)
     else:
         return 'unrecognized message'
+
+def change_status(login, status):
+    user = User.get(login=login)
+    if status.lower() in ['u', 'unknown', 'unk', 'неопр', 'неизвестный']:
+        user.set_status(STATUS_UNKNOWN)
+    elif status.lower() in ['m', 'moderator', 'moder', 'модер', 'модератор']:
+        user.set_status(STATUS_MODERATOR)
+    elif status.lower() in ['a', 'admin', 'administrator', 'админ', 'администратор']:
+        user.set_status(STATUS_ADMIN)
+    else:
+        return False
+    notify_on_status_change(user)
+    return True
