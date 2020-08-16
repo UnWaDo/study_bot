@@ -30,7 +30,7 @@ def send_message(text, user_id):
 def get_user(user_id):
     inner_template = TEMPLATE.format(
         method = 'users.get',
-        params = ('user_ids={u_id}&' +
+        params = ('user_ids={u_id}' +
         '&access_token=' + ACCESS_TOKEN +
         '&v=' + API_VERSION)
     )
