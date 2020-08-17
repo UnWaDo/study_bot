@@ -2,11 +2,13 @@ from random import randint
 from config import ACCESS_TOKEN, API_VERSION, ERROR_MESSAGE
 import logging, requests
 
+
 MIN_SEED = -2147483648
 MAX_SEED = 2147483647
 TEMPLATE = ('https://api.vk.com/method/{method}?{params}' +
             '&access_token=' + ACCESS_TOKEN +
             '&v=' + API_VERSION)
+
 
 def send_message(text, user_id):
     seed = randint(MIN_SEED, MAX_SEED)

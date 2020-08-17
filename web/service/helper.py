@@ -10,7 +10,6 @@ def sign_up(login, password, vk_id):
     user.save(password)
     notify_admin_on_registration(user)
 
-
 def cur_user():
     if 'login' in session:
         return User.get(login=session['login'])

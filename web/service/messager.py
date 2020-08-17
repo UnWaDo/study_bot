@@ -16,7 +16,6 @@ def new_user_greeting(user_id):
     if not result:
         logging.error('Failed to send message to user %s.', user_id)
 
-
 def notify_admin_on_registration(user):
     admin = User.get_by_status(STATUS_ADMIN)[0]
     OutgoingMessage(

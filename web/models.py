@@ -3,6 +3,7 @@ import hashlib
 from config import PASSWORD_SALT
 import web.service.vk_api_connector as VK
 
+
 STATUS_ADMIN = 'a'
 STATUS_STUDENT = 's'
 STATUS_DECANATE = 'd'
