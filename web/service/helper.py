@@ -24,3 +24,10 @@ def get_numeric_id(vk_id):
         if vk_user is not None:
             vk_id = vk_user['id']
     return vk_id
+
+def validate_user(user, allowed=ACCESS_GROUP):
+    if user.status in allowed:
+        return True
+    else:
+        error_message(user.vk_id, 'Недостаточный уровень доступа для выполнения команды.')
+        return False

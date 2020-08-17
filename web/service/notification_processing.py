@@ -6,6 +6,7 @@ import web.service.vk_api_connector as VK
 from web.models import User, VKUser, IncomingMessage, OutgoingMessage
 from web.models import STATUS_ADMIN, STATUS_MODERATOR, STATUS_UNKNOWN, STATUS, ACCESS_GROUP
 from web.service.messager import new_user_greeting, notify_on_status_change, approval_message, error_message
+from web.service.helper import validate_user
 import re
 
 
@@ -35,29 +36,10 @@ def new_message(data):
     if command is None:
         command = re.search(r'set access level of (\w+) as (\w+)', l_text)
     if command is not None:
-        user = User.get(vk_id=message.from_id)
-        if not validate_user(user):
-            return 'ok'
-        login = command.group(1)
-        changing_user = User.get(login=login)
-        if changing_user is None:
-            error_message(user.vk_id, 'Пользователя {} не существует.'.format(login))
-            return 'ok'
-
-        result = change_status(
+        change_status(
+            caller_id=message.from_id,
             login=command.group(1),
             status=command.group(2)
-        )
-        if not result:
-            error_message(user.vk_id, 'Некорректное указание кода уровня доступа.')
-            return 'ok'
-
-        approval_message(
-            user.vk_id,
-            'Пользователь {login} теперь имеет уровень доступа {status}'.format(
-                login=changing_user.login,
-                status=STATUS[changing_user.status]
-            )
         )
         return 'ok'
 
@@ -73,19 +55,8 @@ def new_message(data):
     if command is None:
         command = re.search(r'user\w+ (\w+)', l_text)
     if command is not None:
-        if not validate_user(vk_user):
-            return 'ok'
-
-        category = ''
-        if command.group(1) in ['вк', 'vk', 'вконтакте']:
-            category = 'vk'
-        elif command.group(1) in ['бд', 'bd', 'база']:
-            category = 'bd'
-        elif command.group(1) in ['все', 'оба', 'both', 'all']:
-            category = 'vkbd'
-        else:
-            error_message(vk_user.vk_id, 'Необходимо указать категорию пользователей (БД или ВК).')
-        user_list(vk_user.vk_id, category)
+        user_list(vk_id=message.from_id, category=command.group(1))
+        return 'ok'
 
     return 'ok'
 
@@ -100,8 +71,15 @@ def request_processing(data):
     else:
         return 'unrecognized message'
 
-def change_status(login, status):
+def change_status(caller_id, login, status):
+    caller = VKUser.get(vk_id=caller_id)
+    if not validate_user(caller):
+        return 'ok'
     user = User.get(login=login)
+    if user is None:
+        error_message(caller.vk_id, 'Пользователя {} не существует.'.format(login))
+        return 'ok'
+
     if status.lower() in ['u', 'unknown', 'unk', 'неопр', 'неизвестный']:
         user.set_status(STATUS_UNKNOWN)
     elif status.lower() in ['m', 'moderator', 'moder', 'модер', 'модератор']:
@@ -109,16 +87,17 @@ def change_status(login, status):
     elif status.lower() in ['a', 'admin', 'administrator', 'админ', 'администратор']:
         user.set_status(STATUS_ADMIN)
     else:
-        return False
-    notify_on_status_change(user)
-    return True
+        error_message(user.vk_id, 'Некорректное указание кода уровня доступа.')
+        return 'ok'
 
-def validate_user(user, allowed=ACCESS_GROUP):
-    if user.status in allowed:
-        return True
-    else:
-        error_message(user.vk_id, 'Недостаточный уровень доступа для выполнения команды.')
-        return False
+    approval_message(
+        caller.vk_id,
+        'Пользователь {login} теперь имеет уровень доступа {status}'.format(
+            login=user.login,
+            status=STATUS[user.status]
+        )
+    )
+    notify_on_status_change(user)
 
 def help_message(vk_id):
     user = User.get(vk_id=vk_id)
@@ -156,8 +135,22 @@ def info_access_level(vk_id):
     ).send()
 
 def user_list(vk_id, category):
+    vk_user = VKUser.get(vk_id=vk_user)
+
+    if not validate_user(vk_user):
+        return False
+
+    processed_category = ''
+    if category in ['вк', 'vk', 'вконтакте']:
+        processed_category = 'vk'
+    elif category in ['бд', 'bd', 'база']:
+        category = 'bd'
+    elif category in ['все', 'оба', 'both', 'all']:
+        category = 'vkbd'
+    else:
+        error_message(vk_id, 'Необходимо указать категорию пользователей (БД или ВК).')
     text = ''
-    if 'bd' in category:
+    if 'bd' in processed_category:
         bd_users = User.get_all()
         text += 'Пользователи базы: \n'
         for user in bd_users:
@@ -166,7 +159,7 @@ def user_list(vk_id, category):
                 login=user.login,
                 access_level=STATUS[user.status]
             )
-    if 'vk' in category:
+    if 'vk' in processed_category:
         vk_users = VKUser.get_all()
         text += 'Пользователи ВК: \n'
         for user in vk_users:
