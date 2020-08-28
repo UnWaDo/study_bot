@@ -54,21 +54,21 @@ def new_message(data):
     if command is not None:
         user_list(vk_user=vk_user, category=command.group(1))
         return 'ok'
-    unrecognized_message(vk_user)
+    error_message(vk_user.vk_id, 'Команда не распознана. Для вывода справки напишите "Справка".')
     return 'ok'
 
 def request_processing(data):
     type = data.get('type')
     if type == None:
         logging.error('Notification with no Type stated.')
-        return 'type is not defined'
+        return 'Type is not defined error'
     elif type == 'confirmation':
         return verification(data)
     elif type == 'message_new':
         return new_message(data)
     else:
         logging.error('Message with unknown type.')
-        return 'unrecognized message'
+        return 'Unrecognized message type error'
 
 def change_status(caller, subj_id, status):
     if not validate_vk_user(caller):
@@ -103,9 +103,9 @@ def change_status(caller, subj_id, status):
     notify_on_status_change(subject)
 
 def help_message(vk_user):
-    text = ('Это бот для расписаний и прочей информации.' +
-        'Пока что его функционал весьма ограничен,' +
-        'но впоследствии будет реализовано больше различных функций.' +
+    text = ('Это бот для расписаний и прочей информации. ' +
+        'Пока что его функционал весьма ограничен, ' +
+        'но впоследствии будет реализовано больше различных функций. ' +
         'На текущий момент Вы можете использовать следующие команды: \n' +
         '— Справка: выводит текст данной справки. \n' +
         '— Уровни доступа: более подробная информация о системе с уровнями доступа. \n' +
@@ -126,8 +126,8 @@ def help_message(vk_user):
 
 def info_access_level(vk_user):
     text = ('На текущий момент реализовано три уровня доступа. \n' +
-        '— Администратор (A): имеет право на внесение изменений в уровень доступа других людей,' +
-        'а также обладает другими правами, доступными остальным пользователям.\n' +
+        '— Администратор (A): имеет право на внесение изменений в уровень доступа других людей, ' +
+        'а также обладает другими правами, доступными остальным пользователям. \n' +
         '— Модератор (M): имеет право на просмотр списка зарегистрированных пользователей и на добавление информации (в разработке). \n' +
         '— Обычный пользователь (U): не имеет прав, кроме как писать боту.')
     admin_level = ('\n\nВы являетесь администратором, '+
@@ -185,7 +185,7 @@ def user_list(vk_user, category):
     ).send()
 
 def unrecognized_message(vk_user):
-    text = 'Команда не распознана. Для вывода справки напишите "Справка".'
+    text = ''
     OutgoingMessage(
         to_id = vk_user.vk_id,
         text = text

@@ -169,6 +169,7 @@ class IncomingMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     message_id = db.Column(db.Integer, db.ForeignKey('messages.id'), nullable=False)
     from_id = db.Column(db.Integer, db.ForeignKey('vk_users.vk_id'), nullable=False)
+    message = db.relationship('Message', backref='inc_message', uselist=False)
 
     def save(self, message):
         send_date = datetime.strptime(
@@ -192,6 +193,7 @@ class OutgoingMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     message_id = db.Column(db.Integer, db.ForeignKey('messages.id'), nullable=False)
     to_id = db.Column(db.Integer, db.ForeignKey('vk_users.vk_id'), nullable=False)
+    message = db.relationship('Message', backref='out_message', uselist=False)
 
     def __init__(self, to_id, text):
         self.to_id = to_id

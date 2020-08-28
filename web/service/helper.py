@@ -1,7 +1,7 @@
 from web.models import User, OutgoingMessage, STATUS_ADMIN, ACCESS_GROUP
 from flask import session
 import web.service.vk_api_connector as VK
-from web.service.messager import notify_admin_on_registration
+from web.service.messager import notify_admin_on_registration, error_message
 
 
 def sign_up(login, password, vk_id):
