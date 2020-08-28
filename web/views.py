@@ -52,7 +52,7 @@ def main():
     user = cur_user()
     access = False
     if user is not None:
-        access = user.status in ACCESS_GROUP
+        access = user.vk_user.status in ACCESS_GROUP
     return render_template('main.html', title='Управление', user=user, access=access)
 
 @app.route('/logout', methods=['GET'])

@@ -3,13 +3,13 @@ from web.models import STATUS_ADMIN, STATUS_UNKNOWN, STATUS_MODERATOR, STATUS, O
 from web.models import User, VKUser
 
 
-def new_user_greeting(user_id):
-    user = VK.get_user(user_id)
-    name = user['first_name']
+def new_user_greeting(vk_user):
+    vk_user.update_pd()
+    name = vk_user.name
     text = 'Добро пожаловать, {}! Для вывода справки напишите "Справка"'.format(name)
 
     message = OutgoingMessage(
-        to_id=user_id,
+        to_id=vk_user.vk_id,
         text=text
     )
     result = message.send()
@@ -28,11 +28,11 @@ def notify_admin_on_registration(user):
             )
     ).send()
 
-def notify_on_status_change(user):
+def notify_on_status_change(vk_user):
     OutgoingMessage(
-        to_id=user.vk_id,
+        to_id=vk_user.vk_id,
         text='Ваш уровень доступа к боту изменён.\n \
-            Текущий уровень доступа: {}'.format(STATUS[user.status])
+            Текущий уровень доступа: {}'.format(STATUS[vk_user.status])
     ).send()
 
 def approval_message(vk_id, text):

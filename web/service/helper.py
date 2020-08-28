@@ -1,4 +1,4 @@
-from web.models import User, OutgoingMessage, STATUS_ADMIN
+from web.models import User, OutgoingMessage, STATUS_ADMIN, ACCESS_GROUP
 from flask import session
 import web.service.vk_api_connector as VK
 from web.service.messager import notify_admin_on_registration
@@ -24,9 +24,17 @@ def get_numeric_id(vk_id):
             vk_id = vk_user['id']
     return vk_id
 
-def validate_user(user, allowed=ACCESS_GROUP):
-    if user.status in allowed:
+def validate_vk_user(vk_user, allowed=ACCESS_GROUP):
+    if vk_user.status in allowed:
         return True
     else:
-        error_message(user.vk_id, 'Недостаточный уровень доступа для выполнения команды.')
+        error_message(vk_user.vk_id, 'Недостаточный уровень доступа для выполнения команды.')
+        return False
+
+def validate_user(user, allowed=ACCESS_GROUP):
+    if user.vk_user is None:
+        return False
+    if user.vk_user.status in allowed:
+        return True
+    else:
         return False

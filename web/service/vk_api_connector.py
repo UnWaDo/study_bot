@@ -29,13 +29,16 @@ def send_message(text, user_id):
     else:
         return seed
 
-def get_user(user_id):
+def get_user(user_id, fields=None):
     inner_template = TEMPLATE.format(
         method = 'users.get',
         params = ('user_ids={u_id}' +
         '&access_token=' + ACCESS_TOKEN +
         '&v=' + API_VERSION)
     )
+
+    if fields:
+        inner_template += '&fields={}'.format(fields)
 
     result = requests.get(inner_template.format(
         u_id = user_id
