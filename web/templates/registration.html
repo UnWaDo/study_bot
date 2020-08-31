@@ -1,46 +1,53 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<h3 align="center">Регистрация</h3>
-<div align="center">
-    <form method="post">
+<h3 class="d-flex justify-content-center m-4"> Регистрация </h3>
+
+<div class="d-flex justify-content-center">
+    <form method="post" class="w-25">
+      <div class="form-group">
         {{ form.hidden_tag() }}
         {% if form.login.errors %}
-        {% for error in form.login.errors %}
-            <p style="color: red;">{{error}}</p>
-        {% endfor %}
+          {% for error in form.login.errors %}
+              <p class="text-danger">{{error}}</p>
+          {% endfor %}
         {% endif %}
-        <label for='login'>Логин</label>
-        <div style="margin: 0 auto;">
-            {{form.login(size=30)}}
+        <label for="login">Логин</label>
+        <div class="d-flex justify-content-center">
+            {{form.login(class_='form-control', placeholder='Введите логин')}}
         </div>
-        <br>
-        <br>
+        <small class="form-text text-muted">Логин длиной от 4 до 32 символов</small>
+      </div>
+
+      <div class="form-group">
         {% if form.password.errors %}
-        {% for error in form.password.errors %}
-            <p style="color: red;">{{error}}</p>
-        {% endfor %}
+          {% for error in form.password.errors %}
+              <p class="text-danger">{{error}}</p>
+          {% endfor %}
         {% endif %}
-        <label for='password'>Пароль</label>
-        <div style="margin: 0 auto;">
-            {{form.password(size=30)}}
+        <label for="password">Пароль</label>
+        <div class="d-flex justify-content-center">
+            {{form.password(class_='form-control', placeholder='Введите пароль')}}
         </div>
-        <br>
-        <br>
+        <small class="form-text text-muted">Пароль длиной от 6 символов</small>
+      </div>
+
+      <div class="form-group">
         {% if form.vk_id.errors %}
-        {% for error in form.vk_id.errors %}
-            <p style="color: red;">{{error}}</p>
-        {% endfor %}
+          {% for error in form.vk_id.errors %}
+              <p class="text-danger">{{error}}</p>
+          {% endfor %}
         {% endif %}
-        <label for='vk_id'>Идентификатор ВКонтакте</label>
-        <div style="margin: 0 auto;">
-             {{form.vk_id(size=30)}}
+        <label for="vk_id">Идентификатор ВКонтакте</label>
+        <div class="d-flex justify-content-center">
+             {{form.vk_id(class_='form-control', placeholder='Введите id ВК')}}
         </div>
-        <br>
-        <br>
-        <div style="margin: 0 auto;">
-            <input type="submit" value="Зарегистрироваться">
-        </div>
+        <small class="form-text text-muted">Ваш идентификатор ВКонтакте (текстовый или цифровой)</small>
+      </div>
+
+      <div class="d-flex justify-content-center mt-4">
+          <input class="btn btn-primary" type="submit" value="Зарегистрироваться">
+      </div>
     </form>
 </div>
 {% endblock %}

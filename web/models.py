@@ -11,11 +11,13 @@ STATUS_ADMIN = 'a'
 STATUS_STUDENT = 's'
 STATUS_DECANATE = 'd'
 STATUS_MODERATOR = 'm'
+STATUS_UNREGISTERED ='r'
 STATUS_UNKNOWN = 'u'
 STATUS = {
     STATUS_ADMIN: 'Администратор',
-    STATUS_UNKNOWN: 'Нет доступа',
-    STATUS_MODERATOR: 'Модератор'
+    STATUS_UNKNOWN: 'Пользователь',
+    STATUS_MODERATOR: 'Модератор',
+    STATUS_UNREGISTERED: 'Не зарегистрирован'
 }
 ACCESS_GROUP = [STATUS_ADMIN, STATUS_MODERATOR]
 TIME_ZONE = pytz.timezone('Europe/Moscow')
@@ -86,12 +88,17 @@ class VKUser(db.Model):
     def format_birth_date(self):
         return self.reg_date.strftime(DATE_FORMAT)
 
+    def format_status(self):
+        return STATUS[self.status]
+
     @staticmethod
-    def get(id=None, vk_id=None):
+    def get(id=None, vk_id=None, status=None):
         if vk_id is not None:
             return VKUser.query.filter_by(vk_id=vk_id).first()
         if id is not None:
             return VKUser.query.get(id)
+        if status is not None:
+            return VKUser.query.filter_by(status=status).all()
         return None
 
     @staticmethod
@@ -118,6 +125,15 @@ class User(db.Model):
         hash = hashlib.sha512((password+PASSWORD_SALT).encode('utf-8')).hexdigest()
         return hash == self.password
 
+    def get_status(self):
+        if self.vk_user is None:
+            return STATUS_UNREGISTERED
+        else:
+            return self.vk_user.status
+
+    def format_status(self):
+        return STATUS[self.get_status()]
+
     @staticmethod
     def get(id=None, vk_id=None, login=None, status=None):
         if login is not None:
@@ -126,8 +142,6 @@ class User(db.Model):
             return User.query.filter_by(id=id).first()
         if vk_id is not None:
             return User.query.filter_by(vk_id=vk_id).first()
-        if status is not None:
-            return User.query.filter_by(status=status).all()
         return None
 
     @staticmethod

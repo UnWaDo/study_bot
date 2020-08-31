@@ -28,7 +28,9 @@ def check_auth_login(form, field):
 
 def check_auth_password(form, field):
     user = User.get(login=form.login.data)
-    if not user.check_user(field.data):
+    if user is None:
+        pass
+    elif not user.check_user(field.data):
         raise ValidationError('Неправильный пароль')
 
 

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h3 class="d-flex justify-content-center m-4"> Недостаточный уровень доступа </h3>
+<div class="d-flex justify-content-center">
+  {% if user is none %}
+    <p>Для доступа к странице необходимо авторизоваться. </p>
+  {% elif user.vk_user is none %}
+    <p>Вам необходимо написать боту в ВК, чтобы добавить свой аккаунт в список пользователей.</p>
+  {% else %}
+    <p>Вашего уровня доступа недостаточно. Текущий уровень доступа — {{user.format_status()}}, требуемый уровень — {{req_access}}</p>
+  {% endif %}
+</div>
+{% endblock %}

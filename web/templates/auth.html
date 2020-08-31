@@ -1,35 +1,40 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<h3 align="center">Вход</h3>
-<div align="center">
-    <form method="post">
-        {{ form.hidden_tag() }}
-        {% if form.login.errors %}
+<h3 class="d-flex justify-content-center m-4"> Вход </h3>
+
+<div class="d-flex justify-content-center">
+  <form method="post" class="w-25">
+    <div class="form-group">
+      {{ form.hidden_tag() }}
+      {% if form.login.errors %}
         {% for error in form.login.errors %}
-            <p style="color: red;">{{error}}</p>
+            <p class="text-danger">{{error}}</p>
         {% endfor %}
-        {% endif %}
-        <label for='login'>Логин</label>
-        <div style="margin: 0 auto;">
-            {{form.login(size=30)}}
-        </div>
-        <br>
-        <br>
-        {% if form.password.errors %}
+      {% endif %}
+      <label for="login">Логин</label>
+      <div class="d-flex justify-content-center">
+          {{form.login(class_='form-control', placeholder='Введите логин')}}
+      </div>
+      <small class="form-text text-muted">Логн, использованный Вами при регистрации</small>
+    </div>
+
+    <div class="form-group">
+      {% if form.password.errors %}
         {% for error in form.password.errors %}
-            <p style="color: red;">{{error}}</p>
+            <p class="text-danger">{{error}}</p>
         {% endfor %}
-        {% endif %}
-        <label for='password'>Пароль</label>
-        <div style="margin: 0 auto;">
-            {{form.password(size=30)}}
-        </div>
-        <br>
-        <br>
-        <div style="margin: 0 auto;">
-            <input type="submit" value="Зарегистрироваться">
-        </div>
-    </form>
+      {% endif %}
+      <label for="password">Пароль</label>
+      <div class="d-flex justify-content-center">
+          {{form.password(class_='form-control', placeholder='Введите пароль')}}
+      </div>
+      <small class="form-text text-muted">Пароль длиной от 6 символов</small>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        <input class="btn btn-primary" type="submit" value="Войти">
+    </div>
+  </form>
 </div>
 {% endblock %}

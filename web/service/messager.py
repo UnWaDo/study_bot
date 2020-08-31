@@ -17,7 +17,7 @@ def new_user_greeting(vk_user):
         logging.error('Failed to send message to user %s.', user_id)
 
 def notify_admin_on_registration(user):
-    admin = User.get_by_status(STATUS_ADMIN)[0]
+    admin = VKUser.get(status=STATUS_ADMIN)[0]
     OutgoingMessage(
         to_id=admin.vk_id,
         text='Новый пользователь @id{vk_id} ({login}) зарегистрировался на сайте. \

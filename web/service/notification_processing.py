@@ -60,7 +60,7 @@ def new_message(data):
 def request_processing(data):
     type = data.get('type')
     if type == None:
-        logging.error('Notification with no Type stated.')
+        logging.error('Notification with no type stated.')
         return 'Type is not defined error'
     elif type == 'confirmation':
         return verification(data)
