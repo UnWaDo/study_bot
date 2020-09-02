@@ -48,12 +48,13 @@
       </div>
       <div class="col">
         <h4 class="d-flex justify-content-center border-bottom"> Сообщения </h4>
-        <div>
+        <a class="text-muted" href="#messagesList" data-toggle="collapse"> Показать все </a>
+        <div class="collapse" id="messagesList">
           {% for mes in vk_user.get_all_messages() %}
             {% if mes[0] == 'inc' %}
-              <div class="card w-75 bg-theme text-white float-left m-1">
+              <div class="card w-md bg-theme text-white float-left m-1">
             {% else %}
-              <div class="card w-75 bg-light float-right m-1">
+              <div class="card w-md bg-light float-right m-1">
             {% endif %}
                 <div class="card-header text-muted">
                   {{mes[1].format_datetime()}}
