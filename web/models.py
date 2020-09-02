@@ -91,6 +91,13 @@ class VKUser(db.Model):
     def format_status(self):
         return STATUS[self.status]
 
+    def get_all_messages(self):
+        messages = [('inc', inc.message) for inc in self.inc_messages]
+        for outg in self.outg_messages:
+            messages.append(('outg', outg.message))
+        messages.sort(key=lambda x: x[1].datetime)
+        return messages
+
     @staticmethod
     def get(id=None, vk_id=None, status=None):
         if vk_id is not None:
@@ -168,6 +175,11 @@ class Message(db.Model):
             self.long_text = long
             db.session.add(self)
             db.session.commit()
+
+    def format_datetime(self):
+        utc = pytz.utc.localize(self.datetime)
+        return utc.astimezone(TIME_ZONE).strftime(DATETIME_FORMAT)
+
 
 class LongText(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

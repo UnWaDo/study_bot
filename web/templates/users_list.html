@@ -7,7 +7,12 @@
         <h4 class="d-flex justify-content-center border-bottom"> Пользователи сайта </h4>
         {% for user in users %}
             <div class="d-flex justify-content-center">
-              {{user.login}}, уровень доступа: {{user.format_status()}}, vk:&nbsp;
+              {% if user.vk_user is not none %}
+                <a href="{{url_for('user_page', vk_id=user.vk_id)}}">{{user.login}}</a>
+              {% else %}
+                <span>{{user.login}}</span>
+              {% endif %}
+              <span>, уровень доступа: {{user.format_status()}}, vk:&nbsp;</span>
               <a href="http://vk.com/id{{user.vk_id}}">@id{{user.vk_id}}</a>
             </div>
         {% endfor %}
@@ -18,7 +23,9 @@
             <div class="d-flex justify-content-center">
               <a href="http://vk.com/id{{user.vk_id}}">{{user.surname}} {{user.name}}</a>:
                ID — {{user.vk_id}}, дата регистрации — {{user.format_reg_date()}}
-               <span class="badge badge-secondary ml-2 text-align-center">{{user.format_status()}}</span>
+               <a href="{{url_for('user_page', vk_id=user.vk_id)}}" class="badge badge-secondary ml-2 text-align-center">
+                 {{user.format_status()}}
+               </a>
             </div>
         {% endfor %}
       </div>

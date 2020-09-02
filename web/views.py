@@ -2,7 +2,7 @@ from web import app
 from flask import render_template, request, redirect, url_for, session
 from web.service.notification_processing import request_processing
 from config import ERROR_MESSAGE, VERIFICATION_RESPONSE
-from web.models import VKUser, ACCESS_GROUP, User, STATUS, STATUS_MODERATOR
+from web.models import VKUser, ACCESS_GROUP, User, STATUS, STATUS_MODERATOR, STATUS_UNREGISTERED
 from web.forms import RegistrationForm, AuthForm
 from web.service.helper import sign_up, cur_user
 
@@ -61,6 +61,31 @@ def low_access_level(req_access):
     user = cur_user()
     access = STATUS[req_access]
     return render_template('low_access_level.html', user=user, req_access=access)
+
+@app.route('/vk_user/<int:vk_id>')
+def user_page(vk_id):
+    user = cur_user()
+    if user is None or user.get_status() == STATUS_UNREGISTERED:
+        return redirect('low_access_level', req_access='m')
+    if user.vk_id != vk_id and user.get_status() not in ACCESS_GROUP:
+        return redirect('low_access_level', req_access='m')
+    vk_user = VKUser.get(vk_id=vk_id)
+    if vk_user is None:
+        return render_template('errors/404.html', title='404', user=user), 404
+    return render_template('user_page.html', title='Пользователь', user=user, vk_user=vk_user)
+
+@app.route('/vk_user/<int:vk_id>/update_pd')
+def update_user_pd(vk_id):
+    user = cur_user()
+    if user is None or user.get_status() == STATUS_UNREGISTERED:
+        return 'Not allowed', 403
+    if user.vk_id != vk_id and user.get_status() not in ACCESS_GROUP:
+        return 'Not allowed', 403
+    vk_user = VKUser.get(vk_id=vk_id)
+    if vk_user is None:
+        return 'No such user', 404
+    vk_user.update_pd()
+    return vk_user.jsonify()
 
 @app.route('/logout', methods=['GET'])
 def logout():

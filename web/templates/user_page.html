@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h3 class="d-flex justify-content-center m-4"> Страница пользователя </h3>
+    <div class="row">
+      <div class="col border-right">
+        <h4 class="d-flex justify-content-center border-bottom"> Информация о ВК </h4>
+        <div class="m-5">
+          <div class="row">
+            <div class="col">Фамилия: </div>
+            <div class="col" id="surname">{{vk_user.surname}}</div>
+          </div>
+          <div class="row">
+            <div class="col">Имя: </div>
+            <div class="col" id="name">{{vk_user.name}}</div>
+          </div>
+          <div class="row">
+            <div class="col">Дата регистрации: </div>
+            <div class="col">{{vk_user.format_reg_date()}}</div>
+          </div>
+          <div class="row">
+            <div class="col">Статус: </div>
+            <div class="col">{{vk_user.format_status()}}</div>
+          </div>
+          {% if vk_user.birth_date is not none %}
+            <div class="row">
+              <div class="col">Дата рождения: </div>
+              <div class="col" id="birth_date">{{vk_user.format_birth_date()}}</div>
+            </div>
+          {% endif %}
+          <br>
+          <div class="row">
+            <div class="col"><btn class="btn btn-primary" id="update_pd">Обновить ПД</btn></div>
+            <div class="col"></div>
+          </div>
+        </div>
+        <h4 class="d-flex justify-content-center border-bottom"> Связанный пользователь сайта </h4>
+        <div class="m-5">
+          {% if vk_user.user is none %}
+            <div class="d-flex justify-content-center">Нет связи с пользователем сайта</div>
+          {% else %}
+            <div class="row">
+              <div class="col">Логин: </div>
+              <div class="col">{{vk_user.user.login}}</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col">
+        <h4 class="d-flex justify-content-center border-bottom"> Сообщения </h4>
+        <div>
+          {% for mes in vk_user.get_all_messages() %}
+            {% if mes[0] == 'inc' %}
+              <div class="card w-75 bg-theme text-white float-left m-1">
+            {% else %}
+              <div class="card w-75 bg-light float-right m-1">
+            {% endif %}
+                <div class="card-header text-muted">
+                  {{mes[1].format_datetime()}}
+                </div>
+                <div class="card-body">
+                  {{mes[1].text}}
+                </div>
+              </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+{% endblock %}
