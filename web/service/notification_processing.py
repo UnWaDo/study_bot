@@ -6,7 +6,7 @@ import web.service.vk_api_connector as VK
 from web.models import User, VKUser, IncomingMessage, OutgoingMessage
 from web.models import STATUS_ADMIN, STATUS_MODERATOR, STATUS_UNKNOWN, STATUS, ACCESS_GROUP
 from web.service.messager import new_user_greeting, notify_on_status_change, approval_message, error_message
-from web.service.helper import validate_vk_user
+from web.service.helper import validate_vk_user, is_week_even
 import re
 
 
@@ -54,6 +54,14 @@ def new_message(data):
     if command is not None:
         user_list(vk_user=vk_user, category=command.group(1))
         return 'ok'
+
+    if l_text in ['stn', 'круковская', 'крука']:
+        stn_groups(vk_user)
+        return 'ok'
+    if l_text in ['прак', 'аналит', 'аналитика']:
+        analytics_group(vk_user)
+        return 'ok'
+
     error_message(vk_user.vk_id, 'Команда не распознана. Для вывода справки напишите "Справка".')
     return 'ok'
 
@@ -108,6 +116,8 @@ def help_message(vk_user):
         'но впоследствии будет реализовано больше различных функций. ' +
         'На текущий момент Вы можете использовать следующие команды: \n' +
         '— Справка: выводит текст данной справки. \n' +
+        '— STN: выводит, какие группы на этой неделе идут в какой день. \n' +
+        '— Прак: выводит, какие группы на этой неделе идут на практикум по аналитике. \n' +
         '— Уровни доступа: более подробная информация о системе с уровнями доступа. \n' +
         '— Информация: (в разработке) выводит последнее информационное сообщение. \n')
     moder_level = ('Далее перечислены функции, доступные только Модераторам и Администраторам. \n' +
@@ -189,4 +199,28 @@ def unrecognized_message(vk_user):
     OutgoingMessage(
         to_id = vk_user.vk_id,
         text = text
-    )
+    ).send()
+
+def stn_groups(vk_user):
+    text = 'На этой неделе на STN во вторник идёт группа {group_tuesday}, а в пятницу группа {group_friday}.'
+    if is_week_even():
+        text = text.format(group_tuesday=2, group_friday=1)
+    else:
+        text = text.format(group_tuesday=1, group_friday=2)
+
+    OutgoingMessage(
+        to_id = vk_user.vk_id,
+        text = text
+    ).send()
+
+def analytics_group(vk_user):
+    text = 'На этой неделе на аналитику идут группы {} и {}.'
+    if is_week_even():
+        text = text.format(2, 4)
+    else:
+        text = text.format(1, 3)
+
+    OutgoingMessage(
+        to_id = vk_user.vk_id,
+        text = text
+    ).send()
