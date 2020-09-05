@@ -16,6 +16,15 @@ function process_response(data) {
   }
 }
 
+function change_sign() {
+  if ($("#messagesExpander").text() == "Показать все") {
+    $("#messagesExpander").text("Скрыть все");
+  } else {
+    $("#messagesExpander").text("Показать все");
+  }
+}
+
 $(document).ready(function() {
-  $("#update_pd").click(update_pd);
+  $("#messagesExpander").click(update_pd);
+  $("#messagesExpander").click(change_sign);
 });

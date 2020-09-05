@@ -83,7 +83,7 @@ class VKUser(db.Model):
 
     def format_reg_date(self):
         utc = pytz.utc.localize(self.reg_date)
-        return utc.astimezone(TIME_ZONE).strftime(DATETIME_FORMAT)
+        return utc.astimezone(TIME_ZONE).strftime(DATE_FORMAT)
 
     def format_birth_date(self):
         return self.reg_date.strftime(DATE_FORMAT)

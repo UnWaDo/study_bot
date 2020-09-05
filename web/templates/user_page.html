@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <h3 class="d-flex justify-content-center m-4"> Страница пользователя </h3>
+    <h3 class="d-flex justify-content-center m-4">Страница пользователя</h3>
     <div class="row">
-      <div class="col border-right">
-        <h4 class="d-flex justify-content-center border-bottom"> Информация о ВК </h4>
-        <div class="m-5">
+      <div class="col-3 border-right">
+        <h4 class="d-flex justify-content-center border-bottom">Информация о ВК</h4>
+        <div class="m-2">
           <div class="row">
             <div class="col">Фамилия: </div>
             <div class="col" id="surname">{{vk_user.surname}}</div>
@@ -34,8 +34,8 @@
             <div class="col"></div>
           </div>
         </div>
-        <h4 class="d-flex justify-content-center border-bottom"> Связанный пользователь сайта </h4>
-        <div class="m-5">
+        <h4 class="d-flex border-bottom m-4 text-center">Связанный пользователь сайта</h4>
+        <div class="m-2">
           {% if vk_user.user is none %}
             <div class="d-flex justify-content-center">Нет связи с пользователем сайта</div>
           {% else %}
@@ -46,15 +46,15 @@
           {% endif %}
         </div>
       </div>
-      <div class="col">
-        <h4 class="d-flex justify-content-center border-bottom"> Сообщения </h4>
-        <a class="text-muted" href="#messagesList" data-toggle="collapse"> Показать все </a>
-        <div class="collapse" id="messagesList">
+      <div class="col-8">
+        <h4 class="d-flex justify-content-center border-bottom">Сообщения</h4>
+        <a class="text-muted" href="#messagesList" data-toggle="collapse" id="messagesExpander">Показать все</a>
+        <div class="collapse row" id="messagesList">
           {% for mes in vk_user.get_all_messages() %}
             {% if mes[0] == 'inc' %}
-              <div class="card w-md bg-theme text-white float-left m-1">
+              <div class="card w-50 bg-theme text-white justify-content-start m-1">
             {% else %}
-              <div class="card w-md bg-light float-right m-1">
+              <div class="card w-50 bg-light ml-auto m-1">
             {% endif %}
                 <div class="card-header text-muted">
                   {{mes[1].format_datetime()}}
@@ -63,6 +63,7 @@
                   {{mes[1].text}}
                 </div>
               </div>
+              <div class="w-100"></div>
           {% endfor %}
         </div>
       </div>
