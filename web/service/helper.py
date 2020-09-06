@@ -2,7 +2,6 @@ from web.models import User, OutgoingMessage, STATUS_ADMIN, ACCESS_GROUP
 from flask import session
 import web.service.vk_api_connector as VK
 from web.service.messager import notify_admin_on_registration, error_message
-from datetime import timedelta, date
 
 
 def sign_up(login, password, vk_id):
@@ -39,12 +38,3 @@ def validate_user(user, allowed=ACCESS_GROUP):
         return True
     else:
         return False
-
-def is_week_even():
-    first_monday_in_sem = date(2020, 9, 1) - timedelta(date(2020, 9, 1).weekday())
-    delta = date.today()-first_monday_in_sem
-    sem_week = (delta.days // 7) + 1
-    if sem_week % 2:
-        return False
-    else:
-        return True

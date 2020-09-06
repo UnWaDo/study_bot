@@ -3,10 +3,11 @@ import logging, requests
 from datetime import datetime
 from random import randint
 import web.service.vk_api_connector as VK
-from web.models import User, VKUser, IncomingMessage, OutgoingMessage
+from web.models import User, VKUser, IncomingMessage, OutgoingMessage, Information
 from web.models import STATUS_ADMIN, STATUS_MODERATOR, STATUS_UNKNOWN, STATUS, ACCESS_GROUP
 from web.service.messager import new_user_greeting, notify_on_status_change, approval_message, error_message
-from web.service.helper import validate_vk_user, is_week_even
+from web.service.helper import validate_vk_user
+from web.service.time_processing import is_week_even
 import re
 
 
@@ -60,6 +61,10 @@ def new_message(data):
         return 'ok'
     if l_text in ['прак', 'аналит', 'аналитика']:
         analytics_group(vk_user)
+        return 'ok'
+
+    if l_text in ['информация', 'инфа', 'info', 'information']:
+        information_message(vk_user)
         return 'ok'
 
     error_message(vk_user.vk_id, 'Команда не распознана. Для вывода справки напишите "Справка".')
@@ -119,7 +124,7 @@ def help_message(vk_user):
         '— STN: выводит, какие группы на этой неделе идут в какой день. \n' +
         '— Прак: выводит, какие группы на этой неделе идут на практикум по аналитике. \n' +
         '— Уровни доступа: более подробная информация о системе с уровнями доступа. \n' +
-        '— Информация: (в разработке) выводит последнее информационное сообщение. \n')
+        '— Информация: выводит последнее информационное сообщение. \n')
     moder_level = ('Далее перечислены функции, доступные только Модераторам и Администраторам. \n' +
         '— Пользователи ВК: выводит список людей, которые писали боту и доступны для написания сообщений. \n' +
         '— Пользователи БД: выводит список людей, зарегистрированных в базе. \n')
@@ -189,6 +194,8 @@ def user_list(vk_user, category):
                 access_level = STATUS[user.status],
                 reg_date = user.format_reg_date()
             )
+    if text == '':
+        text = 'На текущий момент соответствующих пользователей нет.'
     OutgoingMessage(
         to_id = vk_user.vk_id,
         text = text
@@ -220,6 +227,13 @@ def analytics_group(vk_user):
     else:
         text = text.format(1, 3)
 
+    OutgoingMessage(
+        to_id = vk_user.vk_id,
+        text = text
+    ).send()
+
+def information_message(vk_user):
+    text = Information.get_unexpired()[-1].formatted_output()
     OutgoingMessage(
         to_id = vk_user.vk_id,
         text = text

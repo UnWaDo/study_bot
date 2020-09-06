@@ -2,9 +2,13 @@ from web import app
 from flask import render_template, request, redirect, url_for, session
 from web.service.notification_processing import request_processing
 from config import ERROR_MESSAGE, VERIFICATION_RESPONSE
-from web.models import VKUser, ACCESS_GROUP, User, STATUS, STATUS_MODERATOR, STATUS_UNREGISTERED
+from web.models import VKUser, ACCESS_GROUP, User, Information
+from web.models import STATUS, STATUS_MODERATOR, STATUS_UNREGISTERED
 from web.forms import RegistrationForm, AuthForm
 from web.service.helper import sign_up, cur_user
+from web.service.time_processing import get_current_datetime, to_utc
+from datetime import datetime
+import re
 
 
 @app.route('/callback/study', methods=['POST'])
@@ -72,7 +76,7 @@ def user_page(vk_id):
     vk_user = VKUser.get(vk_id=vk_id)
     if vk_user is None:
         return render_template('errors/404.html', title='404', user=user), 404
-    return render_template('user_page.html', title='Пользователь', user=user, vk_user=vk_user)
+    return render_template('user_page.html', title='Пользователь', user=user, vk_user=vk_user, load_js=['update_pd'])
 
 @app.route('/vk_user/<int:vk_id>/update_pd')
 def update_user_pd(vk_id):
@@ -86,6 +90,32 @@ def update_user_pd(vk_id):
         return 'No such user', 404
     vk_user.update_pd()
     return vk_user.jsonify()
+
+@app.route('/info/list')
+def info_list():
+    user = cur_user()
+    today = get_current_datetime('%Y-%m-%dT%H:%M')
+    return render_template('info_list.html', title='Информация', user=user, info_list=Information.get_unexpired(), today=today, load_js=['filter_info'])
+
+@app.route('/info/list/filter/<string:filter>')
+def update_info_list(filter):
+    since = None
+    incl_expire = False
+    if 'e' in filter:
+        incl_expire = True
+        filter = filter.replace('e', '')
+    s_pos = filter.find('s')
+    if s_pos >= 0:
+        try:
+            since = datetime.strptime(filter[s_pos+1:], '%Y-%m-%dT%H:%M')
+            since = to_utc(since).replace(tzinfo=None)
+        except ValueError:
+            pass
+    if incl_expire:
+        info_list = Information.get_all(since=since)
+    else:
+        info_list = Information.get_unexpired(since=since)
+    return render_template('info_list_upd.html', info_list=info_list)
 
 @app.route('/logout', methods=['GET'])
 def logout():

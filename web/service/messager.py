@@ -22,7 +22,7 @@ def notify_admin_on_registration(user):
         to_id=admin.vk_id,
         text='Новый пользователь @id{vk_id} ({login}) зарегистрировался на сайте. \
             Чтобы изменить его уровень доступа, отправьте сообщение \
-            "Задать уровень доступа *login* как *уровень доступа*."'.format(
+            "Задать уровень доступа *vk_id* как *уровень доступа*."'.format(
                 vk_id=user.vk_id,
                 login=user.login
             )

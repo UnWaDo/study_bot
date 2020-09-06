@@ -3,8 +3,8 @@ import hashlib
 from config import PASSWORD_SALT
 import web.service.vk_api_connector as VK
 from datetime import datetime
+from web.service.time_processing import format_date, format_datetime, DATE_FORMAT
 import time
-import pytz
 
 
 STATUS_ADMIN = 'a'
@@ -20,9 +20,6 @@ STATUS = {
     STATUS_UNREGISTERED: 'Не зарегистрирован'
 }
 ACCESS_GROUP = [STATUS_ADMIN, STATUS_MODERATOR]
-TIME_ZONE = pytz.timezone('Europe/Moscow')
-DATE_FORMAT = '%d-%m-%Y'
-DATETIME_FORMAT = '%H:%M:%S %Z %d-%m-%Y'
 
 
 class VKUser(db.Model):
@@ -36,6 +33,7 @@ class VKUser(db.Model):
     user = db.relationship('User', backref='vk_user', uselist=False)
     inc_messages = db.relationship('IncomingMessage', backref='vk_user', uselist=True)
     outg_messages = db.relationship('OutgoingMessage', backref='vk_user', uselist=True)
+    information = db.relationship('Information', backref='author', uselist=True)
 
     def __init__(self, vk_id, status=STATUS_UNKNOWN):
         self.vk_id = int(vk_id)
@@ -82,8 +80,7 @@ class VKUser(db.Model):
         db.session.commit()
 
     def format_reg_date(self):
-        utc = pytz.utc.localize(self.reg_date)
-        return utc.astimezone(TIME_ZONE).strftime(DATE_FORMAT)
+        return format_date(self.reg_date)
 
     def format_birth_date(self):
         return self.reg_date.strftime(DATE_FORMAT)
@@ -177,8 +174,7 @@ class Message(db.Model):
             db.session.commit()
 
     def format_datetime(self):
-        utc = pytz.utc.localize(self.datetime)
-        return utc.astimezone(TIME_ZONE).strftime(DATETIME_FORMAT)
+        return format_datetime(self.datetime)
 
 
 class LongText(db.Model):
@@ -239,3 +235,91 @@ class OutgoingMessage(db.Model):
         db.session.add(self)
         db.session.commit()
         return True
+
+class Information(db.Model):
+    __tablename__ = 'information'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    creation_time = db.Column(db.DateTime, nullable=False)
+    expiration_time = db.Column(db.DateTime)
+    modification_time = db.Column(db.DateTime, nullable=False)
+    text = db.Column(db.String(1000), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('vk_users.vk_id'), nullable=False)
+    approved = db.Column(db.Boolean, nullable=False)
+
+    def __init__(self, author_id, text, expiration_time=None):
+        self.author_id = author_id
+        self.text = text
+
+        author = VKUser.get(vk_id=author_id)
+        if author is None or author.status not in ACCESS_GROUP:
+            self.approved = False
+        else:
+            self.approved = True
+
+        self.creation_time = datetime.utcnow()
+        self.modification_time = self.creation_time
+        self.expiration_time = expiration_time
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def was_modified(self):
+        if self.creation_time == self.modification_time:
+            return False
+        else:
+            return True
+
+    def was_expired(self, dt=datetime.utcnow()):
+        if self.expiration_time is None or dt < self.expiration_time:
+            return False
+        else:
+            return True
+
+    def approve(self, vk_user):
+        if vk_user.status in ACCESS_GROUP:
+            self.approved = True
+            db.session.add(self)
+            db.session.commit()
+        return self.approved
+
+    def set_expiration_time(self, exp_time=datetime.utcnow()):
+        self.expiration_time = exp_time
+        db.session.add(self)
+        db.session.commit()
+
+    def formatted_output(self):
+        text = 'Дата публикации: {} \n'.format(self.format_ct())
+        if self.modification_time != self.creation_time:
+            text += 'Изменено: {} \n'.format(self.format_mt())
+        if self.expiration_time:
+            text += 'Действительно до: {} \n'.format(self.format_et())
+        text += '\n{}'.format(self.text)
+        text += '\nby @id{} ({} {})'.format(self.author.vk_id, self.author.surname, self.author.name)
+        return text
+
+    def format_ct(self):
+        return format_datetime(self.creation_time)
+
+    def format_mt(self):
+        return format_datetime(self.modification_time)
+
+    def format_et(self):
+        return format_datetime(self.expiration_time)
+
+    @staticmethod
+    def get_unexpired(since=None):
+        info_list = Information.query.filter_by(approved=True).all()
+        if since is not None:
+            info_list = list(filter(lambda info: info.creation_time >= since, info_list))
+
+        info_list = list(filter(lambda info: not info.was_expired(), info_list))
+        return info_list
+
+    @staticmethod
+    def get_all(since=None):
+        info_list = Information.query.filter_by(approved=True).all()
+        if since is None:
+            return info_list
+        info_list = list(filter(lambda info: info.creation_time >= since, info_list))
+        return info_list

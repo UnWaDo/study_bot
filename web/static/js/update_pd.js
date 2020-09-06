@@ -25,6 +25,6 @@ function change_sign() {
 }
 
 $(document).ready(function() {
-  $("#messagesExpander").click(update_pd);
+  $("#update_pd").click(update_pd);
   $("#messagesExpander").click(change_sign);
 });

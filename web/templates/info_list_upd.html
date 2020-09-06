@@ -1,0 +1,18 @@
+{% for info in info_list %}
+  <div class="card bg-light w-50 mb-2">
+    <div class="card-header text-muted">
+      <div class="float-left">{{info.format_ct()}}</div>
+      <div class="float-right">
+        {% if info.was_expired() %}
+          <div class="badge badge-danger">Истекло</div>
+        {% else %}
+          <div class="badge badge-primary">Актуально</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-text">{{info.text}}</div>
+    </div>
+    <div class="card-footer text-muted">by <a href="https://www.vk.com/{{info.author_id}}">{{info.author.surname}} {{info.author.name}}</a></div>
+  </div>
+{% endfor %}
