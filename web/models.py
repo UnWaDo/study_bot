@@ -4,6 +4,7 @@ from config import PASSWORD_SALT
 import web.service.vk_api_connector as VK
 from datetime import datetime
 from web.service.time_processing import format_date, format_datetime, DATE_FORMAT
+from flask import url_for
 import time
 
 
@@ -93,6 +94,7 @@ class VKUser(db.Model):
         for outg in self.outg_messages:
             messages.append(('outg', outg.message))
         messages.sort(key=lambda x: x[1].datetime)
+        messages.reverse()
         return messages
 
     @staticmethod
@@ -307,6 +309,13 @@ class Information(db.Model):
     def format_et(self):
         return format_datetime(self.expiration_time)
 
+    def expire_link(self):
+        return url_for('info_expire', id=self.id)
+
+    @staticmethod
+    def get(id):
+        return Information.query.filter_by(id=id).first()
+        
     @staticmethod
     def get_unexpired(since=None):
         info_list = Information.query.filter_by(approved=True).all()

@@ -4,9 +4,10 @@ from web.service.notification_processing import request_processing
 from config import ERROR_MESSAGE, VERIFICATION_RESPONSE
 from web.models import VKUser, ACCESS_GROUP, User, Information
 from web.models import STATUS, STATUS_MODERATOR, STATUS_UNREGISTERED
-from web.forms import RegistrationForm, AuthForm
+from web.forms import RegistrationForm, AuthForm, InformationForm
 from web.service.helper import sign_up, cur_user
-from web.service.time_processing import get_current_datetime, to_utc
+from web.service.time_processing import get_current_datetime, to_utc, parse_and_transform
+from web.service.time_processing import SITE_DATETIME_FORMAT
 from datetime import datetime
 import re
 
@@ -94,8 +95,10 @@ def update_user_pd(vk_id):
 @app.route('/info/list')
 def info_list():
     user = cur_user()
-    today = get_current_datetime('%Y-%m-%dT%H:%M')
-    return render_template('info_list.html', title='Информация', user=user, info_list=Information.get_unexpired(), today=today, load_js=['filter_info'])
+    today = get_current_datetime(SITE_DATETIME_FORMAT)
+    info_list = Information.get_unexpired()
+    info_list.reverse()
+    return render_template('info_list.html', title='Информация', user=user, info_list=info_list, today=today, load_js=['filter_info'])
 
 @app.route('/info/list/filter/<string:filter>')
 def update_info_list(filter):
@@ -107,15 +110,52 @@ def update_info_list(filter):
     s_pos = filter.find('s')
     if s_pos >= 0:
         try:
-            since = datetime.strptime(filter[s_pos+1:], '%Y-%m-%dT%H:%M')
-            since = to_utc(since).replace(tzinfo=None)
+            since = parse_and_transform(filter[s_pos+1:])
         except ValueError:
             pass
     if incl_expire:
         info_list = Information.get_all(since=since)
     else:
         info_list = Information.get_unexpired(since=since)
+    info_list.reverse()
     return render_template('info_list_upd.html', info_list=info_list)
+
+@app.route('/info/create', methods=['GET', 'POST'])
+def info_create():
+    user = cur_user()
+    today = get_current_datetime(SITE_DATETIME_FORMAT)
+    saved = False
+
+    if user is None or user.get_status() not in ACCESS_GROUP:
+        return redirect('low_access_level', req_access='m')
+
+    info_form = InformationForm()
+    if info_form.validate_on_submit():
+        if info_form.need_exp_dt.data:
+            info = Information(
+                author_id = user.vk_user.vk_id,
+                text = info_form.text.data,
+                expiration_time = to_utc(info_form.exp_dt.data).replace(tzinfo=None)
+            )
+            info.save()
+            saved = True
+        else:
+            info = Information(
+                author_id = user.vk_user.vk_id,
+                text = info_form.text.data
+            )
+            info.save()
+            saved = True
+
+    return render_template('info_create.html', title='Добавить информацию', user=user, form=info_form, today=today, saved=saved, load_js=['text_limit'])
+
+@app.route('/info/expire/<string:id>')
+def info_expire(id):
+    user = cur_user()
+    if user is None or user.get_status() not in ACCESS_GROUP:
+        return 'Not allowed', 403
+    Information.get(id=id).set_expiration_time()
+    return 'ok'
 
 @app.route('/logout', methods=['GET'])
 def logout():

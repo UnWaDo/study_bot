@@ -6,7 +6,7 @@
         {% if info.was_expired() %}
           <div class="badge badge-danger">Истекло</div>
         {% else %}
-          <div class="badge badge-primary">Актуально</div>
+          <div class="btn badge badge-primary unexpired" href="{{info.expire_link()}}">Актуально</div>
         {% endif %}
       </div>
     </div>

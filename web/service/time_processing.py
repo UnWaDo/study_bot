@@ -5,6 +5,7 @@ import pytz
 TIME_ZONE = pytz.timezone('Europe/Moscow')
 DATE_FORMAT = '%d-%m-%Y'
 DATETIME_FORMAT = '%H:%M:%S %Z %d-%m-%Y'
+SITE_DATETIME_FORMAT = '%Y-%m-%dT%H:%M'
 
 
 def is_week_even():
@@ -16,17 +17,22 @@ def is_week_even():
     else:
         return True
 
-def format_datetime(dt):
+def format_datetime(dt, format=DATETIME_FORMAT):
     utc = pytz.utc.localize(dt)
-    return utc.astimezone(TIME_ZONE).strftime(DATETIME_FORMAT)
+    return utc.astimezone(TIME_ZONE).strftime(format)
 
-def format_date(date):
+def format_date(date, format=DATE_FORMAT):
     utc = pytz.utc.localize(date)
-    return utc.astimezone(TIME_ZONE).strftime(DATE_FORMAT)
+    return utc.astimezone(TIME_ZONE).strftime(format)
 
-def get_current_datetime(format=DATE_FORMAT):
+def get_current_datetime(format=SITE_DATETIME_FORMAT):
     utc = pytz.utc.localize(datetime.utcnow())
     return utc.astimezone(TIME_ZONE).strftime(format)
+
+def parse_and_transform(dt, format=SITE_DATETIME_FORMAT, tz=TIME_ZONE):
+    dt = datetime.strptime(dt, format)
+    dt = to_utc(dt, tz).replace(tzinfo=None)
+    return dt
 
 def to_utc(dt, tz=TIME_ZONE):
     dt = tz.localize(dt)

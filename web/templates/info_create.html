@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block body %}
+{% if saved %}
+  <div class="d-flex justify-content-center p-2 m-2 bg-success rounded text-light"><i>Информация успешно записана</i></div>
+{% endif %}
+<h3 class="d-flex justify-content-center m-4"> Добавить информацию </h3>
+
+<div class="d-flex justify-content-center">
+    <form method="post" class="w-50">
+      <div class="form-group">
+        {{ form.hidden_tag() }}
+        {% if form.exp_dt.errors %}
+          {% for error in form.exp_dt.errors %}
+              <p class="text-danger">{{error}}</p>
+          {% endfor %}
+        {% endif %}
+        <label for="exp_dt" class="form-control-label">Срок истекания</label>
+        <div class="d-flex justify-content-center">
+            {{form.exp_dt(class_='form-control', value=today, min=today)}}
+        </div>
+        <small class="form-text text-muted">Срок, до которого информация актуальна</small>
+      </div>
+
+      <div class="form-group">
+        <label for="need_exp_dt">Установить срок истекания</label> {{form.need_exp_dt()}}
+        <small class="form-text text-muted">Учитывать ли срок актуальности информации</small>
+      </div>
+
+      <div class="form-group">
+        {% if form.text.errors %}
+          {% for error in form.text.errors %}
+              <p class="text-danger">{{error}}</p>
+          {% endfor %}
+        {% endif %}
+        <label for="text">Информационное сообщение</label>
+        <div class="d-flex justify-content-center">
+             {{form.text(class_='form-control', placeholder='Текст сообщения (не более 1000 символов)')}}
+        </div>
+        <small class="form-text text-muted">Основной текст сообщения. Не может превышать 1000 символов и быть менее 10 символов</small>
+        <small class="text-muted" id="symbolsLeft">Осталось 1000 из 1000</small>
+      </div>
+
+      <div class="d-flex justify-content-center mt-4">
+          <input class="btn btn-primary" type="submit" value="Опубликовать" id="submit">
+      </div>
+    </form>
+</div>
+{% endblock %}
