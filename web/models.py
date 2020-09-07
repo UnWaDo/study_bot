@@ -178,6 +178,11 @@ class Message(db.Model):
     def format_datetime(self):
         return format_datetime(self.datetime)
 
+    def get_text(self):
+        if self.long_text is not None:
+            return self.long_text.text
+        return self.text
+
 
 class LongText(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -187,6 +192,9 @@ class LongText(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+    def get_text(self):
+        return self.message.get_text()
 
 class IncomingMessage(db.Model):
     __tablename__ = 'incoming_messages'
@@ -211,6 +219,9 @@ class IncomingMessage(db.Model):
         self.from_id = message['from_id']
         db.session.add(self)
         db.session.commit()
+
+    def get_text(self):
+        return self.message.get_text()
 
 class OutgoingMessage(db.Model):
     __tablename__ = 'outgoing_messages'
@@ -315,7 +326,7 @@ class Information(db.Model):
     @staticmethod
     def get(id):
         return Information.query.filter_by(id=id).first()
-        
+
     @staticmethod
     def get_unexpired(since=None):
         info_list = Information.query.filter_by(approved=True).all()

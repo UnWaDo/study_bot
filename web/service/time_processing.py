@@ -8,9 +8,9 @@ DATETIME_FORMAT = '%H:%M:%S %Z %d-%m-%Y'
 SITE_DATETIME_FORMAT = '%Y-%m-%dT%H:%M'
 
 
-def is_week_even():
+def is_week_even(dt=date.today()):
     first_monday_in_sem = date(2020, 9, 1) - timedelta(date(2020, 9, 1).weekday())
-    delta = date.today()-first_monday_in_sem
+    delta = dt - first_monday_in_sem
     sem_week = (delta.days // 7) + 1
     if sem_week % 2:
         return False
