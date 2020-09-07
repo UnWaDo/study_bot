@@ -210,9 +210,9 @@ def analytics_group(vk_user, inc_message):
         )
         text = 'На неделе, соответствующей {}, на аналитику идут группы {} и {}'
         if is_week_even(dt):
-            text = text.format(dt, group_tuesday=2, group_friday=1)
+            text = text.format(dt, 2, 1)
         else:
-            text = text.format(dt, group_tuesday=1, group_friday=2)
+            text = text.format(dt, 1, 2)
 
     OutgoingMessage(
         to_id = vk_user.vk_id,
