@@ -307,8 +307,8 @@ class Information(db.Model):
             text += 'Изменено: {} \n'.format(self.format_mt())
         if self.expiration_time:
             text += 'Действительно до: {} \n'.format(self.format_et())
-        text += '\n{}'.format(self.text)
-        text += '\nby @id{} ({} {})'.format(self.author.vk_id, self.author.surname, self.author.name)
+        text += 'by @id{} ({} {})\n'.format(self.author.vk_id, self.author.surname, self.author.name)
+        text += '————————\n{}\n————————'.format(self.text)
         return text
 
     def format_ct(self):
