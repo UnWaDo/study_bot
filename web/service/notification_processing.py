@@ -25,6 +25,12 @@ def on_new_message(data):
     l_text = inc_message.get_text().lower()
     vk_user = inc_message.vk_user
 
+    if vk_user is None:
+        vk_user = VKUser(vk_id=inc_message.from_id)
+        vk_user.save()
+        new_user_greeting(vk_user)
+        return 'ok'
+
     for command in COMMANDS.keys():
         if l_text.startswith(command):
             COMMANDS[command](vk_user, inc_message)
