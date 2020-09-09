@@ -283,7 +283,9 @@ class Information(db.Model):
         else:
             return True
 
-    def was_expired(self, dt=datetime.utcnow()):
+    def was_expired(self, dt=None):
+        if dt is None:
+            dt = datetime.utcnow()
         if self.expiration_time is None or dt < self.expiration_time:
             return False
         else:
@@ -296,7 +298,9 @@ class Information(db.Model):
             db.session.commit()
         return self.approved
 
-    def set_expiration_time(self, exp_time=datetime.utcnow()):
+    def set_expiration_time(self, exp_time=None):
+        if exp_time is None:
+            exp_time = datetime.utcnow()
         self.expiration_time = exp_time
         db.session.add(self)
         db.session.commit()
