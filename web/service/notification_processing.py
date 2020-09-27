@@ -8,7 +8,7 @@ from web.models import STATUS_ADMIN, STATUS_MODERATOR, STATUS_UNKNOWN, STATUS, A
 from web.models import Person, StudyGroup, Lesson
 from web.service.messager import new_user_greeting, notify_on_status_change, approval_message, error_message
 from web.service.helper import validate_vk_user, get_numeric_id
-from web.service.time_processing import is_week_even, WEEK_DAYS, format_time, WEEK_EVEN
+from web.service.time_processing import is_week_even, WEEK_DAYS, format_time, WEEK_EVEN, format_date
 import re
 
 
@@ -304,7 +304,14 @@ def schedule(vk_user, inc_message):
                 week_day = i
                 break
 
-    message = 'Расписание на текущую неделю: \n'
+    if week_day is not None:
+        message = 'Расписание на {}'.format(week_day)
+        if dt is not None:
+            message += ' {}: \n'.format(format_date(dt))
+        else:
+            ' этой недели: \n'
+    else:
+        message = 'Расписание на текущую неделю: \n'
     lessons = group.get_lessons(week_day=week_day, is_week_even=even_week)
     week_day = -1
     for lesson in lessons:
