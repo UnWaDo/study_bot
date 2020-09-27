@@ -101,8 +101,8 @@ def help_message(vk_user, inc_message):
         '— Информация [истекшее] [от year-month-day]: выводит актуальные информационные сообщения \n' +
         'Если указан параметр "истекшее", то выводит в том числе и информацию с истёкшим сроком \n' +
         'Если указана дата, то выводит информацию, добавленную не ранее этой даты \n\n' +
-        '— Расписание [день недели] [группа *номер группы*]: выводит расписание \n' +
-        'Если указан парамет [день недели], то выводит расписание только на конкретный день. День недели должен быть указан полностью (пример: "понедельник") \n' +
+        '— Расписание [день недели или дата] [группа *номер группы*]: выводит расписание \n' +
+        'Если указан параметр [день недели или дата], то выводит расписание только на конкретный день (формат даты: year-month-day, пример: "2020-09-01"). День недели должен быть указан полностью (пример: "понедельник") \n' +
         'Если указан параметр [группа *номер группы*] (доступно только Модераторам и Администраторам), то выводит расписание произвольной группы \n\n' +
         '— Я: выводит доступную боту информацию о Вашей личности \n\n')
     moder_level = ('Далее перечислены функции, доступные только Модераторам и Администраторам \n\n' +
@@ -272,10 +272,9 @@ def schedule(vk_user, inc_message):
         error_message(vk_user.vk_id, 'Вы не являетесь обучающимся')
         return 'Not student error'
 
-    command = re.search(r'группа ([\S]+)', inc_message.get_text())
     if person is not None and person.student is not None:
         group = person.student.group
-
+    command = re.search(r'группа ([\S]+)', inc_message.get_text())
     if command is not None:
         if vk_user.status not in ACCESS_GROUP:
             error_message(vk_user.vk_id, 'Просматривать расписание с указанием группы могут только Модераторы и Администраторы')
@@ -291,10 +290,19 @@ def schedule(vk_user, inc_message):
                 return 'More than one group error'
             else:
                 group = group[0]
-    for i in range(len(WEEK_DAYS)):
-        if WEEK_DAYS[i] in l_text:
-            week_day = i
-            break
+    command = re.search(r'(\d{4})-(\d{2})-(\d{2})', l_text)
+    if command is not None:
+        dt = date(
+            year = int(command.group(1)),
+            month = int(command.group(2)),
+            day = int(command.group(3))
+        )
+        week_day = dt.weekday()
+    else:
+        for i in range(len(WEEK_DAYS)):
+            if WEEK_DAYS[i] in l_text:
+                week_day = i
+                break
 
     message = 'Расписание на текущую неделю: \n'
     lessons = group.get_lessons(week_day=week_day, is_week_even=even_week)
