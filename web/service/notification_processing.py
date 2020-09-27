@@ -265,6 +265,7 @@ def information_message(vk_user, inc_message):
 def schedule(vk_user, inc_message):
     l_text = inc_message.get_text().lower()
     week_day = None
+    dt = None
     even_week = WEEK_EVEN[is_week_even()]
 
     person = vk_user.person
@@ -305,7 +306,7 @@ def schedule(vk_user, inc_message):
                 break
 
     if week_day is not None:
-        message = 'Расписание на {}'.format(week_day)
+        message = 'Расписание на {}'.format(WEEK_DAYS[week_day])
         if dt is not None:
             message += ' {}: \n'.format(format_date(dt))
         else:
