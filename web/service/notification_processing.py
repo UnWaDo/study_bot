@@ -301,7 +301,7 @@ def schedule(vk_user, inc_message):
     week_day = -1
     for lesson in lessons:
         if lesson.week_day > week_day:
-            week_day += 1
+            week_day = lesson.week_day
             message += '\n' + WEEK_DAYS[week_day].capitalize() + '\n'
         message += lesson.formatted_output() + '\n'
     OutgoingMessage(
