@@ -27,8 +27,7 @@ def format_datetime(dt, format=DATETIME_FORMAT):
     return utc.astimezone(TIME_ZONE).strftime(format)
 
 def format_date(date, format=DATE_FORMAT):
-    utc = pytz.utc.localize(date)
-    return utc.astimezone(TIME_ZONE).strftime(format)
+    return date.strftime(format)
 
 def format_time(time, format=TIME_FORMAT):
     return time.strftime(format)
