@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h3 class="d-flex justify-content-center m-4"> Список обучающихся </h3>
+
+
+<div class="d-flex row justify-content-center border-top">
+  <div class="w-100 justify-content-center m-2">
+    <h4 class="text-center">Фильтры</h4>
+    <div class="d-flex justify-content-center">
+      <form class="row m-2" method="post">
+        <div class="justify-content-center d-flex w-100">
+          {% for field in form %}
+            {% if field.errors | length %}
+              {% for error in field.errors %}
+                <p class="text-danger">{{field.name}}: {{error}}</p>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
+        {{ form.hidden_tag() }}
+        <div class="form-group col-4">
+          <label for="person_id">Идентификатор</label>
+          {{ form.id(class_='form-control', placeholder='ID')}}
+          <small class="form-text text-muted">Числовой идентификатор человека</small>
+        </div>
+        <div class="form-group col-4">
+          <label for="full_name">ФИО</label>
+          {{ form.full_name(class_='form-control', placeholder='ФИО')}}
+          <small class="form-text text-muted">ФИО студента</small>
+        </div>
+        <div class="form-group col-4">
+          <label for="group">Группа</label>
+          {{ form.group(class_='form-control')}}
+          <small class="form-text text-muted">Учебная группа</small>
+        </div>
+        <div class="form-group col-6">
+          <label for="edu_org">Учреждение</label>
+          {{ form.edu_org(class_='form-control')}}
+          <small class="form-text text-muted">Образовательная организация</small>
+        </div>
+        <div class="form-group col-6">
+          <label for="department">Подразделение</label>
+          {{ form.department(class_='form-control')}}
+          <small class="form-text text-muted">Подразделение (нужно сначала указать учреждение)</small>
+        </div>
+
+        <div class="form-group w-100 justify-content-center d-flex">
+          <button type="submit" class="btn btn-primary">Обновить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="d-flex justify-content-center border-top row w-100">
+    <h4 class="text-center w-100 m-2">Список</h4>
+    {% if students is not none and students | length %}
+      {% for student in students %}
+      <div class="card bg-light w-25 m-4">
+        {% if student.group.get_elder() == student %}
+        <div class="card-header text-muted bg-theme" data-toggle="tooltip" data-placement="top" title="Староста">
+        {% else %}
+        <div class="card-header text-muted">
+        {% endif %}
+          <div class="m-auto">{{student.person_id}}</div>
+        </div>
+        <div class="card-body">
+          <div class="card-text">
+            <div><b>ФИО:</b> {{ student.pd.full_name() }}</div>
+            <div><b>Группа:</b> {{ student.group.format_name() }}</div>
+            <div><b>Факультет:</b> <span data-toggle="tooltip" data-placement="right" title="{{ student.group.department.name }}">{{ student.group.department.short_name }}</span></div>
+            <div><b>ОУ:</b> <span data-toggle="tooltip" data-placement="right" title="{{ student.group.department.edu_org.name }}">{{ student.group.department.edu_org.short_name }}<span></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-danger">Обучающиеся не найдены</div>
+    {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
