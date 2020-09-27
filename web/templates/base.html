@@ -17,12 +17,32 @@
           {% if user is none %}
             <a href="{{url_for('registration')}}" class="btn btn-outline-light m-1 float-right">Зарегистрироваться</a>
             <a href="{{url_for('auth')}}" class="btn btn-outline-light m-1 float-right">Войти</a>
+            <a href="{{url_for('info_list')}}" class="btn btn-outline-light m-1 float-right">Информация</a>
           {% else %}
             <a href="{{url_for('logout')}}" class="btn btn-outline-light m-1 float-right">Выйти</a>
             <a href="{{url_for('users_list')}}" class="btn btn-outline-light m-1 float-right">Список пользователей</a>
-            <a href="{{url_for('info_create')}}" class="btn btn-outline-light m-1 float-right">Добавить информацию</a>
+            <div class="dropdown">
+              <a href="#" class="btn btn-outline-light m-1 float-right dropdown-toggle" id="info-dd" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Информация</a>
+              <div class="dropdown-menu" aria-labelledby="info-dd">
+                <a href="{{url_for('info_list')}}" class="dropdown-item">Информация</a>
+                <a href="{{url_for('info_create')}}" class="dropdown-item">Добавить информацию</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <a href="#" class="btn btn-outline-light m-1 float-right dropdown-toggle" id="study-dd" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Учёба</a>
+              <div class="dropdown-menu" aria-labelledby="study-dd">
+                <h6 class="dropdown-header">Списки</h6>
+                  <a href="{{url_for('req_list', req='persons')}}" class="dropdown-item">Физ. лица</a>
+                  <a href="{{url_for('req_list', req='students')}}" class="dropdown-item">Студенты</a>
+                  <a href="{{url_for('req_list', req='teachers')}}" class="dropdown-item">Преподаватели</a>
+                  <a href="{{url_for('req_list', req='edu_orgs')}}" class="dropdown-item">Учреждения</a>
+                  <a href="{{url_for('req_list', req='departments')}}" class="dropdown-item">Подразделения</a>
+                <div class="dropdown-divider"></div>
+                <h6 class="dropdown-header">Модификация</h6>
+                  <a href="{{url_for('req_add', req='lesson')}}" class="dropdown-item">Занятия</a>
+              </div>
+            </div>
           {% endif %}
-          <a href="{{url_for('info_list')}}" class="btn btn-outline-light m-1 float-right">Информация</a>
         </div>
       </div>
     </div>

@@ -5,9 +5,10 @@ from random import randint
 import web.service.vk_api_connector as VK
 from web.models import User, VKUser, IncomingMessage, OutgoingMessage, Information
 from web.models import STATUS_ADMIN, STATUS_MODERATOR, STATUS_UNKNOWN, STATUS, ACCESS_GROUP
+from web.models import Person, StudyGroup, Lesson
 from web.service.messager import new_user_greeting, notify_on_status_change, approval_message, error_message
 from web.service.helper import validate_vk_user, get_numeric_id
-from web.service.time_processing import is_week_even
+from web.service.time_processing import is_week_even, WEEK_DAYS, format_time, WEEK_EVEN
 import re
 
 
@@ -99,7 +100,11 @@ def help_message(vk_user, inc_message):
         '— Уровни доступа: более подробная информация о системе с уровнями доступа \n\n' +
         '— Информация [истекшее] [от year-month-day]: выводит актуальные информационные сообщения \n' +
         'Если указан параметр "истекшее", то выводит в том числе и информацию с истёкшим сроком \n' +
-        'Если указана дата, то выводит информацию, добавленную не ранее этой даты \n\n')
+        'Если указана дата, то выводит информацию, добавленную не ранее этой даты \n\n' +
+        '— Расписание [день недели] [группа *номер группы*]: выводит расписание \n' +
+        'Если указан парамет [день недели], то выводит расписание только на конкретный день. День недели должен быть указан полностью (пример: "понедельник") \n' +
+        'Если указан параметр [группа *номер группы*] (доступно только Модераторам и Администраторам), то выводит расписание произвольной группы \n\n' +
+        '— Я: выводит доступную боту информацию о Вашей личности \n\n')
     moder_level = ('Далее перечислены функции, доступные только Модераторам и Администраторам \n\n' +
         '— Пользователи ВК: выводит список людей, которые писали боту и доступны для написания сообщений \n\n' +
         '— Пользователи БД: выводит список людей, зарегистрированных в базе \n\n')
@@ -257,6 +262,94 @@ def information_message(vk_user, inc_message):
             text = info.formatted_output()
         ).send()
 
+def schedule(vk_user, inc_message):
+    l_text = inc_message.get_text().lower()
+    week_day = None
+    even_week = WEEK_EVEN[is_week_even()]
+
+    person = vk_user.person
+    if vk_user.status not in ACCESS_GROUP and (person is None or person.student is None):
+        error_message(vk_user.vk_id, 'Вы не являетесь обучающимся')
+        return 'Not student error'
+
+    command = re.search(r'группа ([\S]+)', inc_message.get_text())
+    if person is not None and person.student is not None:
+        group = person.student.group
+
+    if command is not None:
+        if vk_user.status not in ACCESS_GROUP:
+            error_message(vk_user.vk_id, 'Просматривать расписание с указанием группы могут только Модераторы и Администраторы')
+            return 'Caller validation error'
+        else:
+            print(command.group(1))
+            group = StudyGroup.get_by_name(command.group(1))
+            if len(group) == 0:
+                error_message(vk_user.vk_id, 'Указанная группа не существует')
+                return 'Invalid group error'
+            elif len(group) > 1:
+                error_message(vk_user.vk_id, 'Существует несколько групп с таким названием')
+                return 'More than one group error'
+            else:
+                group = group[0]
+    for i in range(len(WEEK_DAYS)):
+        if WEEK_DAYS[i] in l_text:
+            week_day = i
+            break
+
+    message = 'Расписание на текущую неделю: \n'
+    lessons = group.get_lessons(week_day=week_day, is_week_even=even_week)
+    week_day = -1
+    for lesson in lessons:
+        if lesson.week_day > week_day:
+            week_day += 1
+            message += '\n' + WEEK_DAYS[week_day].capitalize() + '\n'
+        message += lesson.formatted_output() + '\n'
+    OutgoingMessage(
+        to_id = vk_user.vk_id,
+        text = message
+    ).send()
+
+def about_me(vk_user, inc_message):
+    message = 'VK: \n'
+    message += ('Фамилия: {surname} \n' +
+        'Имя: {name} \n' +
+        'Дата регистрации ботом: {reg_date} \n' +
+        'Уровень доступа: {status}\n'
+    ).format(
+        surname = vk_user.surname,
+        name = vk_user.name,
+        reg_date = vk_user.format_reg_date(),
+        status = vk_user.format_status()
+    )
+    if vk_user.birth_date is not None:
+        message += 'Дата рождения: {}\n'.format(vk_user.format_birth_date())
+
+    if vk_user.person is not None:
+        person = vk_user.person
+        message += '\nДобавлено вручную: \n'
+        message += 'ФИО: {} \n'.format(person.full_name())
+        if person.birth_date is not None:
+            message += 'Дата рождения: {}\n'.format(person.get_birth_date())
+        if person.phone_number is not None:
+            message += 'Телефон: {}\n'.format(person.get_phone_number())
+        if person.email is not None:
+            message += 'Почта: {}\n\n'.format(person.email)
+        if person.student is not None:
+            message += 'Студент {edu_org}, факультет {department}, группа {group}\n\n'.format(
+                edu_org = person.student.group.department.edu_org.name,
+                department = person.student.group.department.name,
+                group = person.student.group.format_name()
+            )
+        if person.teacher is not None:
+            message += 'Преподаватель {edu_org}, подразделение {department}\n\n'.format(
+                edu_org = person.teacher.department.edu_org.name,
+                department = person.teacher.department.name
+            )
+    OutgoingMessage(
+        to_id = vk_user.vk_id,
+        text = message
+    ).send()
+
 
 COMMANDS = {
     'справка': help_message,
@@ -265,5 +358,7 @@ COMMANDS = {
     'уровни доступа': info_access_level,
     'информация': information_message,
     'пользователи': user_list,
-    'изменить статус': change_status
+    'изменить статус': change_status,
+    'расписание': schedule,
+    'я': about_me
 }

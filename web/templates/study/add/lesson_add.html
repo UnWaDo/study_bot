@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h3 class="d-flex justify-content-center m-4"> Изменение расписания </h3>
+
+
+<div class="d-flex row justify-content-center border-top">
+  <div class="w-100 justify-content-center m-2">
+    <h4 class="text-center">Форма</h4>
+    <div class="d-flex justify-content-center">
+      <form class="row m-2" method="post">
+        <div class="justify-content-center d-flex w-100">
+          {% for field in form %}
+            {% if field.errors | length %}
+              {% for error in field.errors %}
+                <p class="text-danger">{{field.name}}: {{error}}</p>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
+        {{ form.hidden_tag() }}
+        <div class="form-group col-6">
+          <label for="edu_org">Учреждение</label>
+          {{ form.edu_org(class_='form-control')}}
+          <small class="form-text text-muted">Образовательная организация</small>
+        </div>
+        <div class="form-group col-6">
+          <label for="department">Подразделение</label>
+          {{ form.department(class_='form-control')}}
+          <small class="form-text text-muted">Подразделение (нужно сначала указать учреждение)</small>
+        </div>
+        <div class="form-group col-6">
+          <label for="group">Группа</label>
+          {{ form.group(class_='form-control')}}
+          <small class="form-text text-muted">Учебная группа</small>
+        </div>
+        <div class="form-group col-6">
+          <label for="subject">Предмет</label>
+          {{ form.subject(class_='form-control')}}
+          <small class="form-text text-muted">Предмет и преподаватель</small>
+        </div>
+
+        <div class="form-group col-4">
+          <label for="week_day">Организация</label>
+          {{ form.classroom_edu_org(class_='form-control')}}
+          <small class="form-text text-muted">Организация, в которой проходят занятия</small>
+        </div>
+        <div class="form-group col-4">
+          <label for="week_day">Аудитория</label>
+          {{ form.classroom(class_='form-control')}}
+          <small class="form-text text-muted">Аудитория, в которой проходит занятие</small>
+        </div>
+        <div class="form-group col-4">
+          <label for="week_day">День недели</label>
+          {{ form.week_day(class_='form-control')}}
+          <small class="form-text text-muted">В какой день недели проходит занятие</small>
+        </div>
+
+        <div class="form-group col-4">
+          <label for="start_time">Время начала</label>
+          {{ form.start_time(class_='form-control')}}
+          <small class="form-text text-muted">Время начала занятия</small>
+        </div>
+        <div class="form-group col-4">
+          <label for="subject">Время окончания</label>
+          {{ form.end_time(class_='form-control')}}
+          <small class="form-text text-muted">Время окончания занятия</small>
+        </div>
+        <div class="form-group col-4">
+          <label for="subject">Чётность недели</label>
+          {{ form.on_even_weeks(class_='form-control')}}
+          <small class="form-text text-muted">По каким неделям проводится занятие</small>
+        </div>
+
+        <div class="form-group w-100 justify-content-center d-flex">
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="d-flex justify-content-center border-top row w-100">
+    <h4 class="text-center w-100 m-2">Имеющиеся данные</h4>
+    {% if groups is not none and groups | length %}
+      {% for group in groups %}
+      <div class="card bg-light w-25 m-4">
+        <div class="card-header text-muted">
+          <div class="m-auto">{{group.format_name()}}</div>
+        </div>
+        {% if group.lessons is not none and group.lessons | length %}
+          <div class="card-body">
+          {% set ns = namespace(week_day = -1) %}
+          {% for lesson in group.get_lessons() %}
+            {% if lesson.week_day > ns.week_day %}
+              <h6 class="card-subtitle mb-2 text-muted">{{lesson.get_week_day()}}</h6>
+              {% set ns.week_day = lesson.week_day %}
+            {% endif %}
+            <div class="card-text mb-3">
+              {{lesson.formatted_output()}}
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <div class="card-body">
+            <div class="card-text">
+              <div class="text-danger">Нет расписания</div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-danger">Обучающиеся не найдены</div>
+    {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

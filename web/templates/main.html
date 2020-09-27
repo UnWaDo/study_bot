@@ -6,8 +6,8 @@
   <div class="list-group text-center">
     <span class="list-group-item active header">На этом сайте Вы можете</span>
     <a class="list-group-item list-group-item-action" href="{{url_for('users_list')}}">Просматривать информацию о добавленных пользователях (только для Модераторов) </a>
-    <a class="list-group-item disabled">Добавлять информацию (в разработке). </a>
-    <a class="list-group-item disabled">Менять расписание (в разработке). </a>
+    <a class="list-group-item list-group-item-action" href="{{url_for('info_create')}}">Добавлять информацию </a>
+    <a class="list-group-item list-group-item-action" href="{{url_for('req_add', req='lesson')}}">Добавлять расписание </a>
     <a class="list-group-item disabled">Добавлять домашнее задание (в разработке). </a>
     <a class="list-group-item disabled">Изменять статус пользователей (только для Администраторов, в разработке). </a>
   </div>

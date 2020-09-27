@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h3 class="d-flex justify-content-center m-4"> Список учреждений </h3>
+
+<div class="d-flex justify-content-center">
+  <div class="row justify-content-center">
+    {% for edu_org in edu_orgs %}
+    <div class="card bg-light w-25 m-4">
+      <div class="card-header text-muted">
+        <div class="m-auto">{{edu_org.id}}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-text">
+          <div><b>Полное наименование:</b> {{ edu_org.name }}</div>
+          <div><b>Сокращённое наименование:</b> {{ edu_org.short_name }}</div>
+          {% if edu_org.departments | length %}
+            <div><b>Подразделения:</b></div>
+            {% for department in edu_org.departments %}
+              <div><span data-toggle="tooltip" data-placement="right" title="{{ department.name }}">{{ department.short_name }}</span></div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
